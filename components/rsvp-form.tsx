@@ -1,132 +1,155 @@
 'use client';
 
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAppContext } from '@/lib/context/app-context';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
+import { CheckCircle2, Loader2, Users, User } from 'lucide-react';
 
 interface RSVPFormProps {
   eventId: string;
+  theme?: { primary: string; secondary: string };
   onSubmit?: () => void;
 }
 
-export function RSVPForm({ eventId, onSubmit }: RSVPFormProps) {
+export function RSVPForm({ eventId, theme, onSubmit }: RSVPFormProps) {
   const { addGuest } = useAppContext();
-  const [name, setName] = useState('');
-  const [numAttendees, setNumAttendees] = useState('1');
-  const [submitted, setSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [name,         setName]         = useState('');
+  const [numAttendees, setNumAttendees] = useState(1);
+  const [submitted,    setSubmitted]    = useState(false);
+  const [submitting,   setSubmitting]   = useState(false);
+  const [error,        setError]        = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const primary   = theme?.primary   ?? '#e8627a';
+  const secondary = theme?.secondary ?? '#f43f5e';
+  const gradient  = `linear-gradient(135deg, ${primary}, ${secondary})`;
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
-    if (!name.trim()) {
-      setError('Please enter your name');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    // التأكد من أن عدد الحضور بين 1 و 10 كما هو محدد في الواجهة
-    const parsedCount = parseInt(numAttendees);
-    const attendeeCount = Math.min(10, Math.max(1, parsedCount || 1));
-
-    setTimeout(() => {
-      addGuest(eventId, {
-        name: name.trim(),
-        numAttendees: attendeeCount,
-      });
-
-      setName('');
-      setNumAttendees('1');
-      setIsSubmitting(false);
+    if (!name.trim()) { setError('من فضلك أدخل اسمك'); return; }
+    setSubmitting(true);
+    try {
+      await addGuest(eventId, { name: name.trim(), numAttendees });
       setSubmitted(true);
       onSubmit?.();
-
-      // Reset success message after 4 seconds
-      setTimeout(() => {
-        setSubmitted(false);
-      }, 4000);
-    }, 600);
+    } catch (err: any) {
+      setError(err.message ?? 'حدث خطأ، يرجى المحاولة مجدداً');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
     return (
-      <Card className="p-8 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 animate-slideInUp">
-        <div className="text-center">
-          <div className="text-6xl mb-4 animate-bounce-sm">✨</div>
-          <h3 className="text-2xl font-bold text-green-900 mb-2 animate-slideInDown">Thank You!</h3>
-          <p className="text-green-700 animate-fadeIn">Your RSVP has been received. We look forward to seeing you!</p>
-        </div>
-      </Card>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="text-center py-10 px-8"
+      >
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
+          className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center"
+          style={{ background: gradient }}
+        >
+          <CheckCircle2 className="w-10 h-10 text-white" />
+        </motion.div>
+        <h3 className="text-2xl font-bold text-white mb-2">تم تأكيد حضورك! 🎉</h3>
+        <p className="text-white/50 text-sm">
+          شكراً لك <span className="text-white/80 font-medium">{name}</span>، نتطلع لرؤيتك في الحفل
+        </p>
+      </motion.div>
     );
   }
 
   return (
-    <Card className="p-8 bg-white animate-slideInUp">
-      <h3 className="text-2xl font-bold text-gray-900 mb-6 animate-fadeIn">RSVP for This Event</h3>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="animate-fadeIn stagger-1">
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-            Your Name *
-          </label>
-          <Input
-            id="name"
+    <form onSubmit={handleSubmit} className="space-y-5 w-full max-w-sm mx-auto">
+      {/* Name */}
+      <div>
+        <label className="block text-xs font-semibold text-white/40 uppercase tracking-widest mb-2">
+          اسمك الكريم *
+        </label>
+        <div className="relative">
+          <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/25" />
+          <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Enter your full name"
-            disabled={isSubmitting}
-            className="w-full border-2 border-pink-200 focus:border-pink-500 focus:outline-none transition-colors disabled:opacity-50 py-2 rounded-lg"
+            placeholder="أدخل اسمك كاملاً"
+            disabled={submitting}
+            className="w-full pr-10 pl-4 py-3.5 rounded-xl text-sm text-white placeholder-white/25 disabled:opacity-50 transition-all outline-none"
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.1)',
+            }}
+            onFocus={(e) => (e.target.style.borderColor = primary + '80')}
+            onBlur={(e)  => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
           />
         </div>
+      </div>
 
-        <div className="animate-fadeIn stagger-2">
-          <label htmlFor="attendees" className="block text-sm font-medium text-gray-700 mb-2">
-            Number of Attendees
-          </label>
-          <Input
-            id="attendees"
-            type="number"
-            value={numAttendees}
-            onChange={(e) => setNumAttendees(e.target.value)}
-            disabled={isSubmitting}
-            min="1"
-            max="10"
-            className="w-full border-2 border-pink-200 focus:border-pink-500 focus:outline-none transition-colors disabled:opacity-50 py-2 rounded-lg"
-          />
-          <p className="text-xs text-gray-500 mt-1">Including yourself</p>
-        </div>
-
-        {error && (
-          <div className="bg-red-50 border-2 border-red-300 text-red-700 px-4 py-3 rounded-lg animate-slideInDown">
-            {error}
+      {/* Attendees counter */}
+      <div>
+        <label className="block text-xs font-semibold text-white/40 uppercase tracking-widest mb-2">
+          عدد الحضور (بما فيهم أنت)
+        </label>
+        <div className="flex items-center gap-4 p-1 rounded-xl" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <button
+            type="button"
+            onClick={() => setNumAttendees(Math.max(1, numAttendees - 1))}
+            disabled={numAttendees <= 1}
+            className="w-10 h-10 rounded-lg text-white/70 hover:text-white font-bold text-lg transition-colors disabled:opacity-30 flex items-center justify-center"
+            style={{ background: 'rgba(255,255,255,0.05)' }}
+          >
+            −
+          </button>
+          <div className="flex-1 flex items-center justify-center gap-2">
+            <Users className="w-4 h-4 text-white/40" />
+            <span className="text-white font-bold text-xl">{numAttendees}</span>
+            <span className="text-white/40 text-sm">{numAttendees === 1 ? 'شخص' : 'أشخاص'}</span>
           </div>
+          <button
+            type="button"
+            onClick={() => setNumAttendees(Math.min(10, numAttendees + 1))}
+            disabled={numAttendees >= 10}
+            className="w-10 h-10 rounded-lg text-white/70 hover:text-white font-bold text-lg transition-colors disabled:opacity-30 flex items-center justify-center"
+            style={{ background: 'rgba(255,255,255,0.05)' }}
+          >
+            +
+          </button>
+        </div>
+      </div>
+
+      {/* Error */}
+      <AnimatePresence>
+        {error && (
+          <motion.p
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="text-red-400 text-sm text-center"
+          >
+            {error}
+          </motion.p>
         )}
+      </AnimatePresence>
 
-        <Button 
-          type="submit" 
-          disabled={!name.trim() || isSubmitting}
-          className="w-full bg-gradient-to-r from-pink-500 to-blue-500 hover:from-pink-600 hover:to-blue-600 h-12 text-lg font-bold rounded-lg transition-all hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 animate-fadeIn stagger-3"
-        >
-          {isSubmitting ? (
-            <span className="flex items-center justify-center gap-2">
-              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              Submitting...
-            </span>
-          ) : (
-            'Confirm RSVP'
-          )}
-        </Button>
-      </form>
-
-      <p className="text-xs text-gray-500 text-center mt-4">
-        Your information will be shared with the event organizer
-      </p>
-    </Card>
+      {/* Submit */}
+      <button
+        type="submit"
+        disabled={!name.trim() || submitting}
+        className="w-full py-4 rounded-xl font-bold text-white text-base flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        style={{
+          background: gradient,
+          boxShadow: `0 8px 30px ${primary}40`,
+        }}
+      >
+        {submitting
+          ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري التأكيد...</>
+          : '✅ تأكيد حضوري'
+        }
+      </button>
+    </form>
   );
 }

@@ -1,97 +1,130 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { useAppContext } from '@/lib/context/app-context';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
+import { Heart, Lock, ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
+
+// Password is set in ADMIN_PASSWORD env var (falls back to 'admin123' for local dev)
+const DEMO_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
 
 export default function LoginPage() {
-  const router = useRouter();
-  const { login } = useAppContext();
+  const router       = useRouter();
+  const searchParams = useSearchParams();
+  const { login }    = useAppContext();
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Demo credentials for simplicity
-  const DEMO_PASSWORD = 'admin123';
+  const [error,    setError]    = useState('');
+  const [loading,  setLoading]  = useState(false);
+  const [showPass, setShowPass] = useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setIsLoading(true);
-
+    setLoading(true);
     setTimeout(() => {
       if (password === DEMO_PASSWORD) {
         login();
-        router.push('/dashboard');
+        const from = searchParams.get('from') || '/dashboard';
+        router.push(from);
       } else {
-        setError('Invalid password');
-        setIsLoading(false);
+        setError('كلمة المرور غير صحيحة، حاول مرة أخرى');
+        setLoading(false);
       }
-    }, 600);
+    }, 700);
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-pink-50 to-blue-50 flex items-center justify-center px-4 animate-fadeIn">
-      {/* Decorative elements */}
-      <div className="absolute top-10 right-10 w-32 h-32 bg-pink-200 rounded-full opacity-20 animate-float" />
-      <div className="absolute bottom-10 left-10 w-40 h-40 bg-blue-200 rounded-full opacity-20 animate-float" style={{ animationDelay: '0.5s' }} />
-      
-      <Card className="w-full max-w-md p-8 animate-slideInUp relative z-10">
-        <div className="mb-8 text-center animate-fadeIn">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">EventInvite</h1>
-          <p className="text-gray-600">Admin Dashboard</p>
-        </div>
+    <main className="luxury-bg min-h-screen flex items-center justify-center px-4">
+      {/* Ambient blobs */}
+      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full bg-rose-500/6 blur-[130px]" />
+        <div className="absolute -bottom-40 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full bg-violet-500/6 blur-[130px]" />
+      </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div className="animate-fadeIn stagger-1">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter admin password"
-              disabled={isLoading}
-              className="w-full border-2 border-pink-200 focus:border-pink-500 focus:outline-none transition-colors disabled:opacity-50 py-2 rounded-lg"
-            />
+      <motion.div
+        initial={{ opacity: 0, y: 24, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="w-full max-w-md"
+      >
+        {/* Card */}
+        <div className="luxury-card p-8 space-y-8">
+
+          {/* Logo */}
+          <div className="text-center space-y-3">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-xl shadow-rose-500/25">
+              <Heart className="w-7 h-7 text-white fill-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-white">Weddingly</h1>
+              <p className="text-white/35 text-sm mt-1">دخول لوحة التحكم</p>
+            </div>
           </div>
 
-          {error && (
-            <div className="bg-red-50 border-2 border-red-300 text-red-700 px-4 py-3 rounded-lg animate-slideInDown">
-              {error}
+          {/* Divider */}
+          <div className="border-t border-white/5" />
+
+          {/* Form */}
+          <form onSubmit={handleLogin} className="space-y-5">
+            <div>
+              <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-2">
+                كلمة المرور
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/25" />
+                <input
+                  id="password"
+                  type={showPass ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="أدخل كلمة المرور"
+                  disabled={loading}
+                  className="luxury-input w-full pl-10 pr-10 py-3 text-sm disabled:opacity-50"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(!showPass)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+                >
+                  {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
-          )}
 
-          <Button 
-            type="submit" 
-            disabled={isLoading}
-            className="w-full bg-gradient-to-r from-pink-500 to-blue-500 hover:from-pink-600 hover:to-blue-600 hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 animate-fadeIn stagger-2"
-          >
-            {isLoading ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Signing in...
-              </span>
-            ) : (
-              'Sign In'
+            {/* Error */}
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center"
+              >
+                {error}
+              </motion.div>
             )}
-          </Button>
-        </form>
 
-        <p className="text-sm text-gray-600 mt-6 text-center animate-fadeIn stagger-3">
-          Demo password: <code className="bg-gray-100 px-2 py-1 rounded">admin123</code>
-        </p>
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={loading || !password}
+              className="w-full py-3 rounded-xl font-bold text-white text-sm flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                background: 'linear-gradient(135deg, #e8627a, #f43f5e)',
+                boxShadow: '0 4px 20px rgba(232, 98, 122, 0.25)',
+              }}
+            >
+              {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري الدخول...</> : 'دخول →'}
+            </button>
+          </form>
 
-        <Link href="/" className="block mt-6 text-center text-sm text-blue-600 hover:text-blue-700 hover:scale-105 transition-transform animate-fadeIn stagger-4">
-          Back to Home
-        </Link>
-      </Card>
+
+          <Link href="/" className="flex items-center justify-center gap-1.5 text-white/30 hover:text-white/60 text-sm transition-colors">
+            <ArrowLeft className="w-3.5 h-3.5" />
+            العودة للرئيسية
+          </Link>
+        </div>
+      </motion.div>
     </main>
   );
 }
