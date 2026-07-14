@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * Middleware: protect /dashboard/* routes server-side.
+ * Proxy (formerly middleware): protect /dashboard/* routes server-side.
  * Checks the `weddingly_auth` cookie (set on login).
  * If not present → redirect to /login.
  */
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Only protect dashboard routes
