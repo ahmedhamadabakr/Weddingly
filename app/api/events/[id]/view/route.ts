@@ -10,7 +10,8 @@ export async function POST(
   try {
     const { id } = await params;
     await connectDB();
-    const { guestName } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const guestName = body?.guestName || 'زائر';
     const viewerId = `${guestName}-${Date.now()}`;
 
     await EventModel.findByIdAndUpdate(id, {

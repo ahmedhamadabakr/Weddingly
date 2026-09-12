@@ -486,7 +486,7 @@
 }
 
 .font-ruqah, .font-names, .font-ruqah-bold {
-  font-family: 'SFRuqahLoop-Bold', 'SF Ruqah Loop', 'Aref Ruqaa', 'Reem Kufi', cursive, serif !important;
+  font-family: var(--font-aref-ruqaa), 'Aref Ruqaa', 'SFRuqahLoop-Bold', 'SF Ruqah Loop', 'Reem Kufi', cursive, serif !important;
   font-weight: 700 !important;
 }
 
@@ -496,6 +496,9 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  display: inline-block;
+  padding-top: 0.15em;
+  padding-bottom: 0.15em;
   filter: drop-shadow(0 2px 10px rgba(184, 134, 11, 0.25));
 }
 
@@ -504,6 +507,9 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  display: inline-block;
+  padding-top: 0.15em;
+  padding-bottom: 0.15em;
   filter: drop-shadow(0 2px 10px rgba(212, 64, 96, 0.25));
 }
 
