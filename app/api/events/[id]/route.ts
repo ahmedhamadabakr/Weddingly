@@ -19,6 +19,29 @@ export async function GET(
   }
 }
 
+async function generateUniqueSlug(title: string, excludeId?: string): Promise<string> {
+  const sanitized = title
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\u0600-\u06FF\u0750-\u077Fa-zA-Z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') || 'invite';
+
+  let candidateSlug = sanitized;
+  let counter = 1;
+
+  while (true) {
+    const existing = await EventModel.findOne({ slug: candidateSlug }).lean();
+    if (!existing || (excludeId && String(existing._id) === String(excludeId))) {
+      break;
+    }
+    counter++;
+    candidateSlug = `${sanitized}-${counter}`;
+  }
+
+  return candidateSlug;
+}
+
 // PUT /api/events/[id]
 export async function PUT(
   req: NextRequest,
@@ -29,8 +52,12 @@ export async function PUT(
     await connectDB();
     const body = await req.json();
 
-    // Prevent slug / id overwrite
-    delete body.slug;
+    // Clean up or regenerate slug if title is present
+    if (body.title) {
+      body.slug = await generateUniqueSlug(body.title, id);
+    } else {
+      delete body.slug;
+    }
     delete body._id;
 
     if (body.dateTime) body.dateTime = new Date(body.dateTime);

@@ -2,15 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db/mongoose';
 import EventModel from '@/lib/db/models/Event';
 
-function generateSlug(title: string): string {
+async function generateUniqueSlug(title: string): Promise<string> {
   const sanitized = title
     .trim()
-    .replace(/\s+/g, '-')                                               // مسافات → شرطات
-    .replace(/[^\u0600-\u06FF\u0750-\u077Fa-zA-Z0-9-]/g, '')           // احتفظ بالعربي + اللاتيني + الأرقام
-    .replace(/-+/g, '-')                                                // ادمج شرطات متكررة
-    .replace(/^-|-$/g, '');                                             // شيل الشرطات من الأطراف
-  const random = Math.random().toString(36).substring(2, 6);           // 4 حروف عشوائية لتفادي التكرار
-  return `${sanitized}-${random}`;
+    .replace(/\s+/g, '-')
+    .replace(/[^\u0600-\u06FF\u0750-\u077Fa-zA-Z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') || 'invite';
+
+  let candidateSlug = sanitized;
+  let counter = 1;
+
+  while (await EventModel.findOne({ slug: candidateSlug }).lean()) {
+    counter++;
+    candidateSlug = `${sanitized}-${counter}`;
+  }
+
+  return candidateSlug;
 }
 
 // GET /api/events — fetch all events
@@ -40,7 +48,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const slug = generateSlug(title);
+    const slug = await generateUniqueSlug(title);
 
     const event = await EventModel.create({
       title,
