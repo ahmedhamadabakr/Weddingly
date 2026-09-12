@@ -402,7 +402,7 @@ export default function InvitationPage() {
           </div>
 
           {/* Groom & Bride Names in SFRuqahLoop-Bold */}
-          <div className="py-4">
+          <div className="py-5">
             {name2 ? (
               <div className="space-y-3">
                 <motion.h1
@@ -528,7 +528,7 @@ export default function InvitationPage() {
         )}
       </AnimatePresence>
 
-      {/* ── QURANIC VERSE & MESSAGE ── */}
+      {/* ── QURANIC VERSE & MESSAGE ── 
       <Section className="px-4 py-16">
         <div className="max-w-2xl mx-auto luxury-card-frame bg-white/95 p-8 md:p-12 text-center space-y-6 border border-amber-500/40 shadow-xl">
           <div className="text-4xl" aria-hidden="true">✨</div>
@@ -550,7 +550,7 @@ export default function InvitationPage() {
           </p>
         </div>
       </Section>
-
+*/}
       {/* ── COUNTDOWN TIMER ── */}
       <Section className="px-4 py-16">
         <div className="max-w-2xl mx-auto text-center space-y-6">
