@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppContext, Event, EventTheme } from '@/lib/context/app-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageIcon, Music, Loader2, Upload, CheckCircle2, X } from 'lucide-react';
@@ -24,13 +24,14 @@ export function EventForm({ initialEvent, onSubmit, defaultValues }: EventFormPr
   const { createEvent, updateEvent, uploadFile } = useAppContext();
 
   const [formData, setFormData] = useState({
-    title:          initialEvent?.title      || '',
-    type:           (initialEvent?.type      || 'Wedding') as 'Wedding' | 'Engagement' | 'Katb Ketab',
-    hostName:       initialEvent?.hostName   || '',
+    title:          initialEvent?.title          || '',
+    type:           (initialEvent?.type          || 'Wedding') as 'Wedding' | 'Engagement' | 'Katb Ketab',
+    hostName:       initialEvent?.hostName       || '',
     dateTime:       initialEvent ? formatDateTimeForInput(initialEvent.dateTime) : '',
-    location:       initialEvent?.location   || '',
-    message:        initialEvent?.message    || '',
-    coverImage:     initialEvent?.coverImage || '',
+    location:       initialEvent?.location       || '',
+    googleMapsUrl:  initialEvent?.googleMapsUrl  || (initialEvent as any)?.locationUrl || (initialEvent as any)?.mapUrl || '',
+    message:        initialEvent?.message        || '',
+    coverImage:     initialEvent?.coverImage     || '',
     customMusicUrl: initialEvent?.customMusicUrl || '',
   });
 
@@ -40,6 +41,23 @@ export function EventForm({ initialEvent, onSubmit, defaultValues }: EventFormPr
   const [audioFileName,    setAudioFileName]    = useState<string>('');
   const [error,            setError]            = useState('');
   const [isSubmitting,     setIsSubmitting]     = useState(false);
+
+  useEffect(() => {
+    if (initialEvent) {
+      setFormData({
+        title:          initialEvent.title          || '',
+        type:           initialEvent.type           || 'Wedding',
+        hostName:       initialEvent.hostName       || '',
+        dateTime:       initialEvent.dateTime ? formatDateTimeForInput(initialEvent.dateTime) : '',
+        location:       initialEvent.location       || '',
+        googleMapsUrl:  initialEvent.googleMapsUrl  || (initialEvent as any)?.locationUrl || (initialEvent as any)?.mapUrl || '',
+        message:        initialEvent.message        || '',
+        coverImage:     initialEvent.coverImage     || '',
+        customMusicUrl: initialEvent.customMusicUrl || '',
+      });
+      setImagePreview(initialEvent.coverImage || '');
+    }
+  }, [initialEvent]);
 
   const theme      = defaultValues?.theme;
   const musicTrack = defaultValues?.musicTrack ?? initialEvent?.musicTrack ?? 'arabic-vibes';
@@ -109,6 +127,7 @@ export function EventForm({ initialEvent, onSubmit, defaultValues }: EventFormPr
       hostName:       formData.hostName,
       dateTime:       new Date(formData.dateTime),
       location:       formData.location,
+      googleMapsUrl:  formData.googleMapsUrl,
       message:        formData.message,
       coverImage:     formData.coverImage,
       customMusicUrl: formData.customMusicUrl,
@@ -212,6 +231,18 @@ export function EventForm({ initialEvent, onSubmit, defaultValues }: EventFormPr
           </div>
         </div>
 
+        {/* Google Maps Link */}
+        <div>
+          <label className={fieldLabel}>رابط الموقع على خرائط جوجل (Google Maps Link) - اختياري 📍</label>
+          <input
+            type="url"
+            value={formData.googleMapsUrl}
+            onChange={(e) => setFormData({ ...formData, googleMapsUrl: e.target.value })}
+            placeholder="ضع رابط موقع الحفل هنا (مثال: https://maps.app.goo.gl/...)"
+            className={inputClass}
+          />
+        </div>
+
         {/* Message */}
         <div>
           <label className={fieldLabel}>رسالة الدعوة</label>
@@ -241,8 +272,8 @@ export function EventForm({ initialEvent, onSubmit, defaultValues }: EventFormPr
           </label>
 
           {imagePreview && (
-            <div className="mt-3 rounded-xl overflow-hidden border border-white/10 relative">
-              <img src={imagePreview} alt="preview" className="w-full max-h-52 object-cover" />
+            <div className="mt-3 rounded-xl overflow-hidden border border-white/10 relative bg-black/40 p-1">
+              <img src={imagePreview} alt="preview" className="w-full h-auto max-h-96 object-contain block rounded-lg" />
               {imageUploading && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                   <div className="text-center">

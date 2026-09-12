@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
             folder: 'weddingly/images',
             allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
             transformation: [
-              { width: 1400, height: 700, crop: 'fill', quality: 'auto', fetch_format: 'auto' },
+              { width: 1920, crop: 'limit', quality: 'auto', fetch_format: 'auto' },
             ],
           };
 

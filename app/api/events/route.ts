@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 
     const {
       title, type, hostName, dateTime, location, message,
-      coverImage, musicTrack, customMusicUrl, theme,
+      coverImage, musicTrack, customMusicUrl, googleMapsUrl, theme,
     } = body;
 
     if (!title || !type || !hostName || !dateTime || !location) {
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
       hostName,
       dateTime: new Date(dateTime),
       location,
-      message:        message       ?? '',
+      message:        message        ?? '',
       coverImage:     coverImage     ?? '',
       slug,
       guests:         [],
@@ -56,6 +56,7 @@ export async function POST(req: NextRequest) {
       uniqueViewers:  [],
       musicTrack:     musicTrack     ?? 'arabic-vibes',
       customMusicUrl: customMusicUrl ?? '',
+      googleMapsUrl:  googleMapsUrl  ?? '',
       theme:          theme          ?? { primary: '#e8627a', secondary: '#7c3aed' },
     });
 

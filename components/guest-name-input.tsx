@@ -18,7 +18,6 @@ export function GuestNameInput({ onNameSubmit, eventTitle, hostName }: GuestName
     e.preventDefault();
     if (guestName.trim()) {
       setIsSubmitting(true);
-      // Small delay for animation effect
       setTimeout(() => {
         onNameSubmit(guestName.trim());
       }, 300);
@@ -26,37 +25,37 @@ export function GuestNameInput({ onNameSubmit, eventTitle, hostName }: GuestName
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-white to-blue-50 p-4 animate-fadeIn">
-      <div className="w-full max-w-md animate-slideInUp">
-        {/* Decorative Background Elements */}
-        <div className="absolute top-10 right-10 w-20 h-20 bg-pink-200 rounded-full opacity-20 animate-float" />
-        <div className="absolute bottom-20 left-10 w-32 h-32 bg-blue-200 rounded-full opacity-20 animate-float" style={{ animationDelay: '0.5s' }} />
-        
-        <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-8 backdrop-blur-sm">
+    <div className="min-h-screen flex items-center justify-center bg-[#060a14] p-4 font-normal-text relative overflow-hidden">
+      {/* Background ambient light */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-amber-500/10 rounded-full blur-[140px] pointer-events-none" />
+
+      <div className="w-full max-w-md relative z-10 animate-slideInUp">
+        <div className="luxury-card-frame p-8 text-center border border-amber-500/30 shadow-2xl">
           {/* Welcome Message */}
-          <div className="mb-8 text-center animate-fadeIn stagger-1">
-            <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-pink-500 to-blue-500 bg-clip-text text-transparent">
-              You&apos;re Invited!
+          <div className="mb-6 space-y-3">
+            <span className="text-4xl">💌</span>
+            <p className="text-amber-200/70 text-sm tracking-widest uppercase font-semibold">دعوة خاصة</p>
+            <h2 className="text-3xl md:text-4xl font-bold font-ruqah-bold gold-foil-text">
+              {eventTitle}
             </h2>
-            <p className="text-gray-600 text-lg font-semibold">{eventTitle}</p>
-            <p className="text-gray-500 text-sm mt-2">by {hostName}</p>
+            <p className="text-white/50 text-sm">من تنظيم: <span className="text-white/80 font-medium">{hostName}</span></p>
           </div>
 
           {/* Main Content */}
-          <div className="mb-8 animate-fadeIn stagger-2">
-            <p className="text-gray-700 text-center mb-6">
-              Please enter your name to view your personalized invitation
+          <div className="mb-6 space-y-4">
+            <p className="text-white/70 text-sm leading-relaxed">
+              يسعدنا التعرف على اسمك الكريم لعرض دعوة الحضور المخصصة لك
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="relative">
+              <div>
                 <Input
                   type="text"
-                  placeholder="Enter your name"
+                  placeholder="أدخل اسمك الكريم هنا..."
                   value={guestName}
                   onChange={(e) => setGuestName(e.target.value)}
                   disabled={isSubmitting}
-                  className="text-lg py-3 px-4 rounded-lg border-2 border-pink-200 focus:border-pink-500 focus:outline-none transition-colors"
+                  className="text-lg py-6 px-4 rounded-xl text-center border-amber-500/30 bg-white/5 text-white placeholder-white/30 focus:border-amber-400 focus:outline-none font-ruqah-bold"
                   autoFocus
                 />
               </div>
@@ -64,23 +63,18 @@ export function GuestNameInput({ onNameSubmit, eventTitle, hostName }: GuestName
               <Button
                 type="submit"
                 disabled={!guestName.trim() || isSubmitting}
-                className="w-full bg-gradient-to-r from-pink-500 to-blue-500 hover:from-pink-600 hover:to-blue-600 text-white font-bold py-3 rounded-lg transition-all hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-amber-500 via-rose-500 to-amber-600 hover:from-amber-600 hover:to-rose-600 text-white font-bold py-6 rounded-xl transition-all shadow-xl hover:scale-[1.02] cursor-pointer"
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Loading...
+                    جاري التجهيز...
                   </span>
                 ) : (
-                  "View Your Invitation"
+                  "افتح الدعوة المخصصة ✨"
                 )}
               </Button>
             </form>
-          </div>
-
-          {/* Footer */}
-          <div className="text-center text-sm text-gray-500 animate-fadeIn stagger-3">
-            <p>RSVP to confirm your attendance</p>
           </div>
         </div>
       </div>

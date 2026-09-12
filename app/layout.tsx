@@ -60,8 +60,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className="font-sans antialiased">
+    <html lang="ar" dir="rtl">
+      <body className="font-normal-text font-sans antialiased bg-[#060a14] text-white">
         <AppProvider>
           {children}
         </AppProvider>

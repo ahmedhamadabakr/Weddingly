@@ -22,6 +22,7 @@ export interface IEvent extends Document {
   uniqueViewers: string[];
   musicTrack?: string;     // track id from library OR cloudinary URL for custom upload
   customMusicUrl?: string; // Cloudinary URL for custom uploaded audio
+  googleMapsUrl?: string;  // Direct Google Maps link
   theme?: {
     primary: string;
     secondary: string;
@@ -51,16 +52,21 @@ const EventSchema = new Schema<IEvent>(
     uniqueViewers: { type: [String], default: [] },
     musicTrack:    { type: String, default: 'arabic-vibes' },
     customMusicUrl:{ type: String, default: '' },
+    googleMapsUrl: { type: String, default: '' },
     theme: {
       primary:   { type: String, default: '#e8627a' },
       secondary: { type: String, default: '#7c3aed' },
       name:      { type: String },
     },
   },
-  { timestamps: true }
+  { timestamps: true, strict: false }
 );
 
-// Prevent model re-compilation in Next.js hot reload
+// Force schema update during Next.js hot reload in development
+if (process.env.NODE_ENV === 'development' && mongoose.models.Event) {
+  delete (mongoose.models as any).Event;
+}
+
 const EventModel: Model<IEvent> =
   mongoose.models.Event ?? mongoose.model<IEvent>('Event', EventSchema);
 

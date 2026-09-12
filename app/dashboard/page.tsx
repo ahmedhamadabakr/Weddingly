@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Plus, LogOut, Eye, Trash2, ExternalLink,
+  Plus, LogOut, Eye, Trash2, ExternalLink, Edit3,
   Calendar, Users, TrendingUp, Heart, ChevronRight,
   Music, MapPin, Clock,
 } from 'lucide-react';
@@ -227,21 +227,28 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Actions */}
-                        <div className="flex gap-2 mt-auto">
+                        <div className="flex gap-1.5 mt-auto">
+                          <Link href={`/dashboard/create?edit=${event.id}`} className="flex-1">
+                            <button className="luxury-btn-ghost w-full text-xs py-2 px-2 flex items-center justify-center gap-1 text-amber-300 border-amber-500/20 hover:bg-amber-500/10">
+                              <Edit3 className="w-3 h-3 text-amber-400" />
+                              تعديل
+                            </button>
+                          </Link>
                           <Link href={`/dashboard/events/${event.id}`} className="flex-1">
-                            <button className="luxury-btn-ghost w-full text-xs py-2 px-3 text-center">
+                            <button className="luxury-btn-ghost w-full text-xs py-2 px-2 text-center">
                               التفاصيل
                             </button>
                           </Link>
                           <Link href={`/invite/${event.slug}`} target="_blank" className="flex-1">
-                            <button className="luxury-btn-ghost w-full text-xs py-2 px-3 flex items-center justify-center gap-1">
+                            <button className="luxury-btn-ghost w-full text-xs py-2 px-2 flex items-center justify-center gap-1">
                               <ExternalLink className="w-3 h-3" />
                               معاينة
                             </button>
                           </Link>
                           <button
                             onClick={() => handleDelete(event.id)}
-                            className="py-2 px-3 rounded-xl bg-red-500/10 border border-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500/20 transition-all duration-200"
+                            className="py-2 px-2.5 rounded-xl bg-red-500/10 border border-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500/20 transition-all duration-200"
+                            title="حذف الدعوة"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>

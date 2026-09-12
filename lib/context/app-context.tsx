@@ -33,6 +33,7 @@ export interface Event {
   uniqueViewers: string[];
   musicTrack?: string;
   customMusicUrl?: string;  // Cloudinary URL for custom audio
+  googleMapsUrl?: string;   // Direct Google Maps link
   theme?: EventTheme;
 }
 
@@ -72,6 +73,7 @@ function mapEvent(raw: any): Event {
     uniqueViewers:  raw.uniqueViewers  ?? [],
     musicTrack:     raw.musicTrack     ?? 'arabic-vibes',
     customMusicUrl: raw.customMusicUrl ?? '',
+    googleMapsUrl:  raw.googleMapsUrl  ?? raw.locationUrl ?? raw.mapUrl ?? '',
     theme:          raw.theme          ?? { primary: '#e8627a', secondary: '#7c3aed' },
   };
 }
@@ -141,9 +143,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setEvents((prev) => prev.filter((e) => e.id !== id));
   };
 
-  const getEvent     = (id: string)   => events.find((e) => e.id === id);
-  const getGuests    = (eventId: string) => events.find((e) => e.id === eventId)?.guests ?? [];
-  const getEventBySlug = (slug: string) => events.find((e) => e.slug === slug);
+  const getEvent       = (id: string)      => events.find((e) => String(e.id) === String(id) || String(e._id) === String(id));
+  const getGuests      = (eventId: string) => events.find((e) => String(e.id) === String(eventId) || String(e._id) === String(eventId))?.guests ?? [];
+  const getEventBySlug = (slug: string)    => events.find((e) => e.slug === slug);
 
   const addGuest = async (
     eventId: string,

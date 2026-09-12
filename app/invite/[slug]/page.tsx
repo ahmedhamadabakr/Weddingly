@@ -1,21 +1,21 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import QRCode from 'react-qr-code';
-import { Amiri, Reem_Kufi } from 'next/font/google';
 import { Event } from '@/lib/context/app-context';
 import { RSVPForm } from '@/components/rsvp-form';
+import { CountdownTimer } from '@/components/countdown-timer';
 import { MUSIC_TRACKS } from '@/lib/music-tracks';
-import { Volume2, VolumeX, MapPin, Calendar, Clock, Heart, ChevronDown } from 'lucide-react';
+import {
+  Volume2, VolumeX, MapPin, Calendar, Clock, Heart, ChevronDown,
+  Share2, CalendarPlus, Navigation, Sparkles, CheckCircle, Music, ZoomIn, X
+} from 'lucide-react';
 
-const amiri  = Amiri({ subsets: ['arabic'], weight: ['400', '700'] });
-const ruqaa  = Reem_Kufi({ subsets: ['arabic'], weight: ['400', '700'] });
-
-/* ───── helpers ───── */
+/* ───── Helper: Split Groom & Bride names ───── */
 const splitNames = (title: string) => {
-  for (const sep of [' & ', ' and ', '&']) {
+  for (const sep of [' & ', ' and ', '&', ' و ']) {
     if (title.includes(sep)) {
       const [a, b] = title.split(sep).map((s) => s.trim());
       return { name1: a, name2: b };
@@ -24,67 +24,122 @@ const splitNames = (title: string) => {
   return { name1: title, name2: '' };
 };
 
+/* ───── Helper: Date & Time in Arabic ───── */
 const arDate = (d: Date) =>
   new Date(d).toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
 const arTime = (d: Date) =>
   new Date(d).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
 
-/* ───── Particle ───── */
+/* ───── Helper: Download .ics calendar invite ───── */
+const downloadICS = (title: string, dateTime: Date, location: string) => {
+  const startDate = new Date(dateTime).toISOString().replace(/-|:|\.\d+/g, '');
+  const endDate = new Date(new Date(dateTime).getTime() + 4 * 60 * 60 * 1000).toISOString().replace(/-|:|\.\d+/g, '');
+  const icsContent = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Weddingly//NONSGML Invitation//AR',
+    'BEGIN:VEVENT',
+    `SUMMARY:${title}`,
+    `LOCATION:${location}`,
+    `DTSTART:${startDate}`,
+    `DTEND:${endDate}`,
+    'DESCRIPTION:ننتظر إطلالتكم البهية لتنيروا حفلنا المبارك.',
+    'END:VEVENT',
+    'END:VCALENDAR'
+  ].join('\r\n');
+
+  const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `${title}.ics`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+};
+
+/* ───── Helper: Ensure absolute valid Google Maps URL ───── */
+const formatGoogleMapsUrl = (url?: string, location?: string) => {
+  if (url && url.trim()) {
+    let cleanUrl = url.trim();
+    if (!/^https?:\/\//i.test(cleanUrl)) {
+      cleanUrl = `https://${cleanUrl}`;
+    }
+    return cleanUrl;
+  }
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location || '')}`;
+};
+
+/* ───── Particle Effect (skipped entirely when reduced motion is requested) ───── */
 const Particle = ({ i, color }: { i: number; color: string }) => (
   <motion.div
-    className="fixed pointer-events-none z-0 select-none text-xl"
-    style={{ left: `${(i * 13 + 5) % 95}vw` }}
-    initial={{ y: '110vh', opacity: 0 }}
-    animate={{ y: '-10vh', opacity: [0, 0.6, 0.6, 0] }}
-    transition={{ duration: 10 + (i % 5) * 2, repeat: Infinity, ease: 'linear', delay: i * 0.7 }}
+    className="fixed pointer-events-none z-0 select-none text-xl opacity-60"
+    style={{ left: `${(i * 17 + 7) % 95}vw` }}
+    initial={{ y: '110vh', opacity: 0, scale: 0.5 }}
+    animate={{ y: '-10vh', opacity: [0, 0.7, 0.7, 0], scale: [0.5, 1, 0.8, 0.4] }}
+    transition={{ duration: 12 + (i % 4) * 3, repeat: Infinity, ease: 'linear', delay: i * 0.6 }}
   >
-    <span style={{ color }}>❤</span>
+    <span style={{ color }}>{i % 2 === 0 ? '✨' : '✦'}</span>
   </motion.div>
 );
 
-/* ───── Section wrapper ───── */
+/* ───── Section Container ───── */
 const Section = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
   <motion.section
-    initial={{ opacity: 0, y: 40 }}
+    initial={{ opacity: 0, y: 35 }}
     whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: '-80px' }}
-    transition={{ duration: 0.7, ease: 'easeOut' }}
+    viewport={{ once: true, margin: '-60px' }}
+    transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
     className={`relative z-10 ${className}`}
   >
     {children}
   </motion.section>
 );
 
-/* ═══════════════════════════════════════════════════════ */
 export default function InvitationPage() {
   const params = useParams();
-  const slug   = params.slug as string;
+  const searchParams = useSearchParams();
+  const slug = params.slug as string;
+  const guestParam = searchParams.get('guest');
 
-  const [event,      setEvent]      = useState<Event | null>(null);
-  const [loading,    setLoading]    = useState(true);
-  const [opened,     setOpened]     = useState(false);
-  const [playing,    setPlaying]    = useState(false);
+  const [event, setEvent] = useState<Event | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [opened, setOpened] = useState(false);
+  const [playing, setPlaying] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [isImageOpen, setIsImageOpen] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const { scrollYProgress } = useScroll();
-  const scrollBarScale      = useTransform(scrollYProgress, [0, 1], [0, 1]);
+  const scrollBarScale = useTransform(scrollYProgress, [0, 1], [0, 1]);
 
-  /* ── Fetch event from API ── */
+  /* ── Respect prefers-reduced-motion ── */
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReducedMotion(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  /* ── Fetch Event ── */
   useEffect(() => {
     fetch(`/api/events/slug/${slug}`)
-      .then((r) => r.ok ? r.json() : null)
+      .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (data?.event) {
           setEvent({
             ...data.event,
-            id:        data.event._id ?? data.event.id,
-            dateTime:  new Date(data.event.dateTime),
+            id: data.event._id ?? data.event.id,
+            dateTime: new Date(data.event.dateTime),
             createdAt: new Date(data.event.createdAt),
-            guests:    (data.event.guests ?? []).map((g: any) => ({
+            guests: (data.event.guests ?? []).map((g: any) => ({
               ...g,
-              eventId:   data.event._id ?? data.event.id,
+              eventId: data.event._id ?? data.event.id,
               timestamp: new Date(g.timestamp),
             })),
           });
@@ -94,22 +149,36 @@ export default function InvitationPage() {
       .finally(() => setLoading(false));
   }, [slug]);
 
-  /* ── audio setup — custom URL takes priority over library ── */
+  /* ── Audio Setup ── */
   useEffect(() => {
     if (!event) return;
     const url = event.customMusicUrl
       ? event.customMusicUrl
       : (MUSIC_TRACKS.find((t) => t.id === event.musicTrack)?.url ?? '/music.mp3');
     const audio = new Audio(url);
-    audio.loop  = true;
+    audio.loop = true;
     audio.addEventListener('canplaythrough', () => setAudioReady(true));
     audioRef.current = audio;
-    return () => { audio.pause(); };
+    return () => {
+      audio.pause();
+    };
   }, [event?.musicTrack, event?.customMusicUrl]);
+
+  /* ── Close lightbox on Escape ── */
+  useEffect(() => {
+    if (!isImageOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsImageOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isImageOpen]);
 
   const handleOpen = () => {
     setOpened(true);
-    audioRef.current?.play().then(() => setPlaying(true)).catch(() => {});
+    if (audioRef.current) {
+      audioRef.current.play().then(() => setPlaying(true)).catch(() => {});
+    }
   };
 
   const toggleMusic = () => {
@@ -122,433 +191,538 @@ export default function InvitationPage() {
     }
   };
 
-  /* ── loading / not found ── */
+  const handleShareWhatsApp = () => {
+    const text = encodeURIComponent(`دعوة حضور حفل ${event?.title}\nيسعدنا حضوركم وتشريفكم لنا ✨\n\nرابط الدعوة:\n${window.location.href}`);
+    window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
+
+  /* ── Loading Screen ── */
   if (loading) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-[#060a14] text-white gap-4">
-        <div className="w-10 h-10 border-2 border-rose-500/30 border-t-rose-500 rounded-full animate-spin" />
-        <p className="text-white/30 text-sm">جاري تحميل الدعوة...</p>
+      <div dir="rtl" className="h-screen flex flex-col items-center justify-center bg-[#060a14] text-white gap-4 font-normal-text">
+        <div className="w-12 h-12 border-2 border-amber-500/30 border-t-amber-400 rounded-full animate-spin" />
+        <p className="text-amber-200/50 text-sm tracking-widest animate-pulse">جاري تحميل الدعوة الفاخرة...</p>
       </div>
     );
   }
 
+  /* ── Not Found Screen ── */
   if (!event) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-[#060a14] text-white gap-4">
+      <div dir="rtl" className="h-screen flex flex-col items-center justify-center bg-[#060a14] text-white gap-4 font-normal-text">
         <div className="text-6xl">💌</div>
-        <p className="text-white/50 text-lg">الدعوة غير موجودة</p>
+        <p className="text-white/60 text-lg">عذراً، هذه الدعوة غير موجودة</p>
       </div>
     );
   }
 
-  const primary   = event.theme?.primary   ?? '#e8627a';
-  const secondary = event.theme?.secondary ?? '#f43f5e';
+  const primary   = event.theme?.primary   ?? '#d4a853';
+  const secondary = event.theme?.secondary ?? '#e8627a';
   const gradient  = `linear-gradient(135deg, ${primary}, ${secondary})`;
   const track     = MUSIC_TRACKS.find((t) => t.id === event.musicTrack) ?? MUSIC_TRACKS[1];
   const { name1, name2 } = splitNames(event.title);
   const inviteUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const particleCount = reducedMotion ? 0 : 16;
 
-  /* ══════════════════════════════════════════
-     🎬 INTRO SCREEN
-  ══════════════════════════════════════════ */
+  /* ══════════════════════════════════════════════════════════
+     🎬 INTRO ENVELOPE SCREEN (Realism & 3D Wax Seal)
+  ══════════════════════════════════════════════════════════ */
   if (!opened) {
     return (
       <div
-        className={`min-h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden relative ${ruqaa.className}`}
-        style={{ background: `linear-gradient(160deg, #060a14 0%, #0d0618 60%, #060a14 100%)` }}
+        dir="rtl"
+        className="min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden relative font-normal-text select-none"
+        style={{ background: `linear-gradient(160deg, #060a14 0%, #0d0918 60%, #060a14 100%)` }}
       >
-        {/* Blobs */}
+        {/* Background glowing lights */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-[-15%] left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full blur-[160px]" style={{ background: `${primary}18` }} />
-          <div className="absolute bottom-[-15%] left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full blur-[140px]" style={{ background: `${secondary}12` }} />
+          <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full blur-[160px]" style={{ background: `${primary}15` }} />
+          <div className="absolute bottom-[-10%] left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full blur-[140px]" style={{ background: `${secondary}12` }} />
         </div>
 
-        {/* Floating particles */}
-        {Array.from({ length: 12 }).map((_, i) => <Particle key={i} i={i} color={primary} />)}
+        {/* Ambient floating sparkles */}
+        {Array.from({ length: reducedMotion ? 0 : 14 }).map((_, i) => <Particle key={i} i={i} color={primary} />)}
 
-        {/* Content */}
+        {/* Realistic Envelope & Card */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="relative z-10 space-y-8 max-w-lg"
+          initial={{ opacity: 0, scale: 0.92, y: 30 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+          className="relative z-10 w-full max-w-lg mx-auto"
         >
-          {/* Icon */}
-          <motion.div
-            animate={{ scale: [1, 1.08, 1] }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-            className="w-20 h-20 mx-auto rounded-2xl flex items-center justify-center text-4xl shadow-2xl"
-            style={{ background: gradient, boxShadow: `0 20px 60px ${primary}40` }}
-          >
-            💍
-          </motion.div>
+          {/* Outer Card Frame with Foil Border */}
+          <div className="luxury-card-frame p-8 md:p-12 relative overflow-hidden border border-amber-500/40 shadow-2xl">
+            {/* Corner Ornaments */}
+            <div className="absolute top-3 left-3 text-amber-500/40 text-xl font-mono" aria-hidden="true">✦</div>
+            <div className="absolute top-3 right-3 text-amber-500/40 text-xl font-mono" aria-hidden="true">✦</div>
+            <div className="absolute bottom-3 left-3 text-amber-500/40 text-xl font-mono" aria-hidden="true">✦</div>
+            <div className="absolute bottom-3 right-3 text-amber-500/40 text-xl font-mono" aria-hidden="true">✦</div>
 
-          <div className="space-y-2">
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="text-white/40 text-base tracking-widest"
+            {/* Personalized Guest Welcome Header */}
+            {guestParam && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs inline-flex items-center gap-2"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span>دعوة مخصصة للكريّم: <strong className="font-ruqah-bold text-sm text-white">{guestParam}</strong></span>
+              </motion.div>
+            )}
+
+            {/* Subtitle */}
+            <p className="text-amber-200/70 text-xs tracking-[0.3em] font-semibold mb-4">
+              دعوة حضور حفل مبارك
+            </p>
+
+            {/* Couple Names in SFRuqahLoop-Bold */}
+            <div className="my-6">
+              {name2 ? (
+                <div className="space-y-1">
+                  <h1 className="text-4xl md:text-6xl font-bold font-ruqah-bold gold-foil-text leading-tight">
+                    {name1}
+                  </h1>
+                  <div className="flex items-center justify-center gap-3 my-2 opacity-80">
+                    <span className="h-px w-12 bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
+                    <span className="text-amber-300 text-2xl font-serif">&amp;</span>
+                    <span className="h-px w-12 bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
+                  </div>
+                  <h1 className="text-4xl md:text-6xl font-bold font-ruqah-bold gold-foil-text leading-tight">
+                    {name2}
+                  </h1>
+                </div>
+              ) : (
+                <h1 className="text-4xl md:text-6xl font-bold font-ruqah-bold gold-foil-text leading-tight">
+                  {event.title}
+                </h1>
+              )}
+            </div>
+
+            {/* Quranic Verse */}
+            <div className="my-6 px-4 py-3 rounded-xl bg-white/[0.02] border border-amber-500/20 text-white/70 text-xs leading-relaxed italic">
+              ﴿ وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا ﴾
+            </div>
+
+            {/* Music track info */}
+            <div className="mb-8 flex items-center justify-center gap-2 text-white/40 text-xs">
+              <Music className="w-3.5 h-3.5 text-amber-400 animate-pulse" aria-hidden="true" />
+              <span>الموسيقى: {track.nameAr}</span>
+            </div>
+
+            {/* 3D Wax Seal Button to Open */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={handleOpen}
+              aria-label="افتح الدعوة"
+              className="wax-seal-3d w-24 h-24 rounded-full mx-auto flex flex-col items-center justify-center cursor-pointer shadow-2xl transition-all duration-300 group focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-400/60"
             >
-              دعوة حضور
-            </motion.p>
-            <motion.h1
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="text-4xl md:text-5xl font-bold"
-              style={{
-                background: gradient,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}
-            >
-              {event.title}
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.7 }}
-              className="text-white/40 text-sm"
-            >
-              يسعدنا دعوتكم لمشاركتنا فرحتنا
-            </motion.p>
+              <span className="text-2xl group-hover:scale-110 transition-transform" aria-hidden="true">💍</span>
+              <span className="text-[10px] font-bold text-amber-100 tracking-wider mt-1 font-normal-text">افتح الدعوة</span>
+            </motion.button>
           </div>
-
-          {/* Ayah */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.9 }}
-            className="px-6 py-4 rounded-2xl text-white/50 text-sm leading-loose italic"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
-          >
-            ﴿ وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا ﴾
-          </motion.div>
-
-          {/* Music info */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.1 }}
-            className="flex items-center justify-center gap-2 text-white/30 text-xs"
-          >
-            <span>{track.emoji}</span>
-            <span>{track.nameAr}</span>
-          </motion.div>
-
-          {/* CTA */}
-          <motion.button
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 1.3 }}
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={handleOpen}
-            className="px-12 py-4 rounded-2xl font-bold text-white text-lg shadow-2xl transition-shadow"
-            style={{ background: gradient, boxShadow: `0 12px 40px ${primary}40` }}
-          >
-            افتح الدعوة ✨
-          </motion.button>
         </motion.div>
       </div>
     );
   }
 
-  /* ══════════════════════════════════════════
-     📜 MAIN INVITATION
-  ══════════════════════════════════════════ */
+  /* ══════════════════════════════════════════════════════════
+     📜 MAIN INVITATION PAGE (Modern, Luxurious, Realistic)
+  ══════════════════════════════════════════════════════════ */
   return (
     <main
-      className={`relative overflow-x-hidden ${amiri.className}`}
-      style={{ background: `linear-gradient(160deg, #060a14 0%, #0d0618 50%, #060a14 100%)` }}
+      dir="rtl"
+      className="relative overflow-x-hidden min-h-screen text-white font-normal-text selection:bg-amber-500/30 select-none"
+      style={{ background: `linear-gradient(160deg, #060a14 0%, #0c0818 50%, #060a14 100%)` }}
     >
-      {/* Scroll progress bar */}
+      {/* Top progress bar */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-[3px] z-50 origin-left"
         style={{ scaleX: scrollBarScale, background: gradient }}
       />
 
-      {/* Particles */}
-      {Array.from({ length: 15 }).map((_, i) => <Particle key={i} i={i} color={primary} />)}
+      {/* Floating particles */}
+      {Array.from({ length: particleCount }).map((_, i) => <Particle key={i} i={i} color={primary} />)}
 
-      {/* Global ambient blobs */}
+      {/* Ambient background glows */}
       <div className="fixed inset-0 pointer-events-none -z-10">
-        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full blur-[180px]" style={{ background: `${primary}08` }} />
-        <div className="absolute bottom-[-10%] left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full blur-[150px]" style={{ background: `${secondary}08` }} />
+        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[850px] h-[550px] rounded-full blur-[190px]" style={{ background: `${primary}10` }} />
+        <div className="absolute bottom-[-10%] left-1/2 -translate-x-1/2 w-[650px] h-[450px] rounded-full blur-[160px]" style={{ background: `${secondary}08` }} />
       </div>
 
-      {/* Music toggle */}
-      <button
-        onClick={toggleMusic}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-2xl flex items-center justify-center shadow-2xl transition-all duration-200 hover:scale-110"
-        style={{ background: gradient, boxShadow: `0 8px 30px ${primary}50` }}
-      >
-        <motion.div
-          animate={playing ? { rotate: [0, 360] } : {}}
-          transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+      {/* Floating Vinyl Audio Controller */}
+      <div className="fixed bottom-6 left-6 z-50 flex items-center gap-3">
+        <button
+          onClick={toggleMusic}
+          aria-label={playing ? 'إيقاف الموسيقى' : 'تشغيل الموسيقى'}
+          title={playing ? 'إيقاف الموسيقى' : 'تشغيل الموسيقى'}
+          className="w-14 h-14 rounded-full luxury-card-frame border border-amber-500/40 flex items-center justify-center shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70"
         >
-          {playing ? <Volume2 className="w-6 h-6 text-white" /> : <VolumeX className="w-6 h-6 text-white/70" />}
-        </motion.div>
-      </button>
+          <motion.div
+            className="w-10 h-10 rounded-full bg-neutral-900 border border-amber-500/50 flex items-center justify-center relative overflow-hidden"
+            animate={playing && !reducedMotion ? { rotate: 360 } : {}}
+            transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+          >
+            <div className="absolute inset-0 bg-radial from-amber-500/20 to-transparent" />
+            {playing ? <Volume2 className="w-5 h-5 text-amber-300 z-10" /> : <VolumeX className="w-5 h-5 text-white/50 z-10" />}
+          </motion.div>
+        </button>
+      </div>
 
-      {/* ── HERO ── */}
-      <section className="min-h-screen flex flex-col items-center justify-center text-center px-6 relative z-10">
+      {/* ── HERO SECTION ── */}
+      <section className="min-h-screen flex flex-col items-center justify-center text-center px-4 py-16 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9 }}
-          className="space-y-6 max-w-2xl"
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+          className="space-y-8 max-w-3xl mx-auto w-full"
         >
-          {/* Decorative line */}
-          <motion.div
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 60, opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.8 }}
-            className="h-px mx-auto rounded-full"
-            style={{ background: gradient }}
-          />
-
-          <p className="text-white/35 text-lg tracking-widest">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</p>
-
-          {/* Names */}
-          {name2 ? (
-            <div className={`space-y-2 ${ruqaa.className}`}>
-              <motion.h1
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3, duration: 0.7 }}
-                className="text-5xl md:text-7xl font-bold"
-                style={{ background: gradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
-              >
-                {name1}
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="text-white/30 text-3xl"
-              >
-                &amp;
-              </motion.p>
-              <motion.h1
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.7, duration: 0.7 }}
-                className="text-5xl md:text-7xl font-bold"
-                style={{ background: gradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
-              >
-                {name2}
-              </motion.h1>
-            </div>
-          ) : (
-            <motion.h1
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3, duration: 0.7 }}
-              className={`text-5xl md:text-7xl font-bold ${ruqaa.className}`}
-              style={{ background: gradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
+          {/* Personalized Guest Welcome Header */}
+          {guestParam && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-200 text-sm font-semibold shadow-lg"
             >
-              {event.title}
-            </motion.h1>
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span>نرحب بحضورك الكريّم: <strong className="font-ruqah-bold text-lg text-white font-bold">{guestParam}</strong></span>
+            </motion.div>
           )}
 
-          {/* Type badge */}
+          {/* Bismillah Header */}
+          <div className="space-y-2">
+            <p className="text-amber-200/50 text-base tracking-[0.2em]">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</p>
+            <div className="w-20 h-px mx-auto rounded-full bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
+          </div>
+
+          {/* Groom & Bride Names in SFRuqahLoop-Bold */}
+          <div className="py-4">
+            {name2 ? (
+              <div className="space-y-3">
+                <motion.h1
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="text-5xl sm:text-7xl md:text-8xl font-bold font-ruqah-bold gold-foil-text leading-tight"
+                >
+                  {name1}
+                </motion.h1>
+
+                <div className="flex items-center justify-center gap-4 my-2">
+                  <div className="h-px w-16 bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
+                  <Heart className="w-6 h-6 text-rose-500 fill-rose-500 animate-pulse" aria-hidden="true" />
+                  <div className="h-px w-16 bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
+                </div>
+
+                <motion.h1
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="text-5xl sm:text-7xl md:text-8xl font-bold font-ruqah-bold gold-foil-text leading-tight"
+                >
+                  {name2}
+                </motion.h1>
+              </div>
+            ) : (
+              <motion.h1
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-5xl sm:text-7xl md:text-8xl font-bold font-ruqah-bold gold-foil-text leading-tight"
+              >
+                {event.title}
+              </motion.h1>
+            )}
+          </div>
+
+          {/* Event Badge */}
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9 }}
-            className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium mx-auto"
-            style={{ background: `${primary}18`, border: `1px solid ${primary}30`, color: primary }}
+            transition={{ delay: 0.6 }}
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold border border-amber-500/30 bg-amber-500/10 text-amber-300"
           >
-            <Heart className="w-3.5 h-3.5 fill-current" />
-            {event.type === 'Wedding' ? 'حفل زفاف' : event.type === 'Engagement' ? 'حفل خطوبة' : 'حفل كتب كتاب'}
+            <Sparkles className="w-4 h-4 text-amber-400" />
+            <span>{event.type === 'Wedding' ? 'حفل زفاف مبارك' : event.type === 'Engagement' ? 'حفل خطوبة مبارك' : 'حفل كتب كتاب'}</span>
           </motion.div>
 
-          {/* Host */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-            className="text-white/40 text-base"
-          >
-            من تنظيم: <span className="text-white/70">{event.hostName}</span>
-          </motion.p>
+         
 
           {/* Scroll hint */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1, y: [0, 8, 0] }}
-            transition={{ delay: 1.5, y: { duration: 2, repeat: Infinity } }}
-            className="flex flex-col items-center gap-1 text-white/20 mt-4"
+            animate={reducedMotion ? {} : { y: [0, 8, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="flex flex-col items-center gap-1 text-white/30 pt-8"
           >
-            <span className="text-xs">اسحب للأسفل</span>
-            <ChevronDown className="w-4 h-4" />
+            <span className="text-xs tracking-widest">اسحب لاستكشاف التفاصيل</span>
+            <ChevronDown className="w-4 h-4 text-amber-400" />
           </motion.div>
         </motion.div>
       </section>
 
-      {/* ── COVER IMAGE (if exists) ── */}
+      {/* ── COVER IMAGE (framed, click-to-zoom) ── */}
       {event.coverImage && (
-        <Section className="px-6 pb-10">
-          <div className="max-w-2xl mx-auto rounded-3xl overflow-hidden shadow-2xl" style={{ boxShadow: `0 30px 80px ${primary}20` }}>
-            <img src={event.coverImage} alt={event.title} className="w-full object-cover max-h-[500px]" />
+        <Section className="w-full px-4 pb-20">
+          <div className="max-w-4xl mx-auto">
+            <button
+              type="button"
+              onClick={() => setIsImageOpen(true)}
+              aria-label="تكبير الصورة"
+              className="relative w-full block rounded-3xl overflow-hidden border border-amber-500/30 shadow-2xl group cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70"
+            >
+              <img
+                src={event.coverImage}
+                alt={event.title}
+                className="w-full h-auto block transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+              />
+              {/* Gradient scrim for legibility + hint */}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#060a14]/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute bottom-4 inset-x-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/50 backdrop-blur-sm border border-amber-400/30 text-amber-100 text-xs font-semibold">
+                  <ZoomIn className="w-3.5 h-3.5" aria-hidden="true" />
+                  اضغط للتكبير
+                </span>
+              </div>
+            </button>
           </div>
         </Section>
       )}
 
-      {/* ── MESSAGE ── */}
-      {event.message && (
-        <Section className="min-h-[60vh] flex items-center justify-center px-6 py-20">
-          <div
-            className="max-w-2xl mx-auto text-center p-10 rounded-3xl space-y-6"
-            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+      {/* ── Image Lightbox ── */}
+      <AnimatePresence>
+        {isImageOpen && event.coverImage && (
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label="عرض الصورة بالحجم الكامل"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+            onClick={() => setIsImageOpen(false)}
           >
-            <div className="text-4xl">💌</div>
-            <p className="text-white/70 text-xl leading-loose" style={{ fontFamily: 'inherit' }}>
-              {event.message}
-            </p>
-            <div className="w-16 h-px mx-auto rounded-full" style={{ background: gradient }} />
-            <p className={`text-white/40 text-base ${ruqaa.className}`}>
-              الفرحة لا تكتمل إلا بوجود الأهل والأحباب
-            </p>
+            <button
+              type="button"
+              onClick={() => setIsImageOpen(false)}
+              aria-label="إغلاق"
+              className="absolute top-5 left-5 w-11 h-11 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70"
+            >
+              <X className="w-5 h-5" aria-hidden="true" />
+            </button>
+            <motion.img
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              src={event.coverImage}
+              alt={event.title}
+              onClick={(e) => e.stopPropagation()}
+              className="max-w-full max-h-[88vh] object-contain rounded-2xl shadow-2xl"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── QURANIC VERSE & MESSAGE ── */}
+      <Section className="px-4 py-16">
+        <div className="max-w-2xl mx-auto luxury-card-frame p-8 md:p-12 text-center space-y-6 border border-amber-500/30">
+          <div className="text-4xl" aria-hidden="true">✨</div>
+          <p className="text-amber-200 font-serif text-lg md:text-xl leading-relaxed italic">
+            &ldquo;وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً&rdquo;
+          </p>
+
+          {event.message && (
+            <div className="pt-4 border-t border-white/10">
+              <p className="text-white/80 text-base md:text-lg leading-relaxed font-normal-text">
+                {event.message}
+              </p>
+            </div>
+          )}
+
+          <div className="w-16 h-px mx-auto bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
+          <p className="text-amber-200/80 font-ruqah-bold text-xl font-bold">
+            فرحتنا تكتمل بمشاركتكم وحضوركم الغالي
+          </p>
+        </div>
+      </Section>
+
+      {/* ── COUNTDOWN TIMER ── */}
+      <Section className="px-4 py-16">
+        <div className="max-w-2xl mx-auto text-center space-y-6">
+          <h2 className="text-3xl md:text-4xl font-bold font-ruqah-bold gold-foil-text">العد التنازلي للموعد</h2>
+          <p className="text-white/50 text-sm font-normal-text">المتبقي على حلول لحظتنا السعيدة</p>
+          <div className="pt-2">
+            <CountdownTimer targetDate={event.dateTime} primaryColor={primary} />
           </div>
-        </Section>
-      )}
+        </div>
+      </Section>
 
       {/* ── DATE & TIME ── */}
-      <Section className="min-h-screen flex items-center justify-center px-6 py-20">
+      <Section className="px-4 py-16">
         <div className="max-w-xl mx-auto text-center space-y-8">
-          <h2 className={`text-4xl font-bold text-white/80 ${ruqaa.className}`}>موعدنا المنتظر</h2>
+          <h2 className="text-3xl md:text-4xl font-bold font-ruqah-bold gold-foil-text">توقيت الحفل</h2>
 
-          <div
-            className="rounded-3xl p-10 space-y-6"
-            style={{
-              background: `linear-gradient(135deg, ${primary}12, ${secondary}12)`,
-              border: `1px solid ${primary}25`,
-              boxShadow: `0 20px 60px ${primary}15`,
-            }}
-          >
+          <div className="luxury-card-frame p-8 md:p-10 space-y-6 border border-amber-500/30">
             {/* Date */}
-            <div className="flex items-center justify-center gap-3">
-              <div className="p-2.5 rounded-xl" style={{ background: `${primary}20` }}>
-                <Calendar className="w-5 h-5" style={{ color: primary }} />
+            <div className="flex items-center justify-between gap-4">
+              <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30">
+                <Calendar className="w-6 h-6 text-amber-400" aria-hidden="true" />
               </div>
-              <div className="text-right">
-                <p className="text-white/35 text-xs mb-1">التاريخ</p>
-                <p className="text-white text-xl font-bold">{arDate(event.dateTime)}</p>
+              <div className="text-right flex-1">
+                <p className="text-white/40 text-xs mb-1 font-semibold">تاريخ اليوم السعيد</p>
+                <p className="text-white text-xl font-bold font-normal-text">{arDate(event.dateTime)}</p>
               </div>
             </div>
 
-            <div className="w-full h-px" style={{ background: `${primary}20` }} />
+            <div className="w-full h-px bg-white/10" />
 
             {/* Time */}
-            <div className="flex items-center justify-center gap-3">
-              <div className="p-2.5 rounded-xl" style={{ background: `${primary}20` }}>
-                <Clock className="w-5 h-5" style={{ color: primary }} />
+            <div className="flex items-center justify-between gap-4">
+              <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30">
+                <Clock className="w-6 h-6 text-amber-400" aria-hidden="true" />
               </div>
-              <div className="text-right">
-                <p className="text-white/35 text-xs mb-1">التوقيت</p>
-                <p className="text-white text-2xl font-bold">في تمام {arTime(event.dateTime)}</p>
+              <div className="text-right flex-1">
+                <p className="text-white/40 text-xs mb-1 font-semibold">توقيت الاستقبال</p>
+                <p className="text-amber-300 text-2xl font-bold font-normal-text">في تمام {arTime(event.dateTime)}</p>
               </div>
             </div>
-          </div>
 
-          {/* Countdown-style dots */}
-          <div className="flex justify-center gap-2">
-            {[...Array(5)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="w-1.5 h-1.5 rounded-full"
-                style={{ background: primary }}
-                animate={{ opacity: [0.2, 1, 0.2] }}
-                transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
-              />
-            ))}
+            {/* Add to calendar button */}
+            <div className="pt-4 border-t border-white/10">
+              <button
+                onClick={() => downloadICS(event.title, event.dateTime, event.location)}
+                className="w-full py-3.5 rounded-xl bg-white/5 border border-amber-500/30 hover:bg-amber-500/20 text-amber-200 font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70"
+              >
+                <CalendarPlus className="w-4 h-4 text-amber-400" aria-hidden="true" />
+                <span>إضافة المناسبة إلى التقويم (.ics)</span>
+              </button>
+            </div>
           </div>
         </div>
       </Section>
 
-      {/* ── LOCATION ── */}
-      <Section className="min-h-screen flex items-center justify-center px-6 py-20">
-        <div className="max-w-xl mx-auto text-center space-y-8">
-          <h2 className={`text-4xl font-bold text-white/80 ${ruqaa.className}`}>مكان الاحتفال</h2>
+      {/* ── LOCATION & MAPS ── */}
+      <Section className="px-4 py-16">
+        <div className="max-w-2xl mx-auto text-center space-y-8">
+          <h2 className="text-3xl md:text-4xl font-bold font-ruqah-bold gold-foil-text">موقع الاحتفال</h2>
 
-          <div
-            className="rounded-3xl p-10 space-y-4"
-            style={{
-              background: `linear-gradient(135deg, ${primary}12, ${secondary}12)`,
-              border: `1px solid ${primary}25`,
-              boxShadow: `0 20px 60px ${primary}15`,
-            }}
-          >
-            <div className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center" style={{ background: gradient }}>
-              <MapPin className="w-8 h-8 text-white" />
+          <div className="luxury-card-frame p-6 md:p-10 space-y-6 border border-amber-500/30">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-amber-500 to-rose-500 flex items-center justify-center shadow-xl">
+              <MapPin className="w-8 h-8 text-white" aria-hidden="true" />
             </div>
-            <p className="text-white text-2xl font-bold leading-relaxed">{event.location}</p>
-            <p className="text-white/35 text-sm italic">
-              &ldquo;ننتظر إطلالتكم البهية لتنير الحفل&rdquo;
+
+            <div className="space-y-2">
+              <p className="text-white/50 text-xs tracking-widest font-semibold">عنوان القاعة / المكان</p>
+              <p className="text-white text-2xl font-bold leading-relaxed font-normal-text">{event.location}</p>
+            </div>
+
+            <p className="text-amber-200/70 text-sm italic">
+              &ldquo;ننتظر إطلالتكم الميمونة لتزيدوا حفلنا إشراقاً وأنساً&rdquo;
             </p>
+
+            {/* Embedded Live Map Preview */}
+            <div className="w-full h-64 sm:h-80 rounded-2xl overflow-hidden border border-amber-500/20 shadow-inner my-4 relative">
+              <iframe
+                title="خريطة الموقع"
+                width="100%"
+                height="100%"
+                className="w-full h-full border-0 grayscale hover:grayscale-0 transition-all duration-500"
+                loading="lazy"
+                allowFullScreen
+                src={`https://maps.google.com/maps?q=${encodeURIComponent(event.googleMapsUrl || event.location)}&output=embed`}
+              />
+            </div>
+
+            {/* Maps Action Button */}
+            <div className="pt-4 border-t border-white/10">
+              <a
+                href={formatGoogleMapsUrl(event.googleMapsUrl, event.location)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-gray-950 font-bold text-sm flex items-center justify-center gap-3 transition-all shadow-lg hover:shadow-amber-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70"
+              >
+                <Navigation className="w-5 h-5 text-gray-950 fill-gray-950" aria-hidden="true" />
+                <span>افتح الموقع مباشرة على خرائط Google 🗺️</span>
+              </a>
+            </div>
           </div>
         </div>
       </Section>
 
-      {/* ── RSVP ── */}
-      <Section className="min-h-screen flex items-center justify-center px-6 py-20">
-        <div className="max-w-sm mx-auto w-full space-y-8 text-center">
+      {/* ── RSVP FORM ── */}
+      <Section className="px-4 py-16">
+        <div className="max-w-md mx-auto space-y-6 text-center">
           <div className="space-y-2">
-            <h2 className={`text-4xl font-bold text-white/80 ${ruqaa.className}`}>تأكيد الحضور</h2>
-            <p className="text-white/35 text-sm">أخبرنا بحضورك لنتمكن من الاستعداد لاستقبالكم</p>
+            <h2 className="text-3xl md:text-4xl font-bold font-ruqah-bold gold-foil-text">تأكيد الحضور (RSVP)</h2>
+            <p className="text-white/50 text-sm font-normal-text">لطفاً أكّدوا حضوركم المبارك ليتسنى لنا حسن الاستقبال</p>
           </div>
 
-          <div
-            className="rounded-3xl p-8"
-            style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.07)',
-            }}
-          >
+          <div className="luxury-card-frame p-8 border border-amber-500/30 shadow-2xl">
             <RSVPForm eventId={event.id} theme={{ primary, secondary }} />
           </div>
         </div>
       </Section>
 
-      {/* ── QR CODE ── */}
-      <Section className="min-h-[70vh] flex items-center justify-center px-6 py-20">
-        <div className="max-w-sm mx-auto text-center space-y-8">
+      {/* ── VIP PASS & QR CODE ── */}
+      <Section className="px-4 py-16">
+        <div className="max-w-md mx-auto text-center space-y-6">
           <div className="space-y-2">
-            <h2 className={`text-3xl font-bold text-white/70 ${ruqaa.className}`}>شارك الدعوة</h2>
-            <p className="text-white/30 text-sm">امسح الكود لمشاركة الدعوة مع الأهل والأحباب</p>
+            <h2 className="text-3xl font-bold font-ruqah-bold gold-foil-text">بطاقة الحضور الرقمية (VIP)</h2>
+            <p className="text-white/40 text-xs font-normal-text">امسح الكود أو استخدم الرابط لمشاركة الفرحة مع الأحباب</p>
           </div>
 
-          <div
-            className="p-6 rounded-3xl inline-block mx-auto"
-            style={{
-              background: 'rgba(255,255,255,0.95)',
-              boxShadow: `0 20px 60px ${primary}30`,
-            }}
-          >
-            <QRCode value={inviteUrl} size={180} fgColor="#1a1a2e" bgColor="transparent" />
-          </div>
+          <div className="luxury-card-frame p-8 border border-amber-500/40 space-y-6 shadow-2xl relative">
+            <div className="p-4 rounded-2xl bg-white inline-block mx-auto shadow-2xl">
+              <QRCode value={inviteUrl} size={170} fgColor="#060a14" bgColor="#ffffff" />
+            </div>
 
-          <p className="text-white/20 text-xs break-all max-w-xs mx-auto">{inviteUrl}</p>
+            <p className="text-amber-200/70 text-xs font-mono break-all bg-white/5 p-2 rounded-lg border border-white/10">
+              {inviteUrl}
+            </p>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                onClick={handleShareWhatsApp}
+                aria-label="مشاركة عبر واتساب"
+                className="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/70"
+              >
+                <Share2 className="w-4 h-4" aria-hidden="true" />
+                <span>واتساب</span>
+              </button>
+
+              <button
+                onClick={handleCopyLink}
+                aria-label={copied ? 'تم نسخ الرابط' : 'نسخ الرابط'}
+                className="py-3 px-4 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-200 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70"
+              >
+                {copied ? <CheckCircle className="w-4 h-4 text-emerald-400" aria-hidden="true" /> : <Share2 className="w-4 h-4 text-amber-400" aria-hidden="true" />}
+                <span>{copied ? 'تم النسخ!' : 'نسخ الرابط'}</span>
+              </button>
+            </div>
+          </div>
         </div>
       </Section>
 
       {/* ── FOOTER ── */}
-      <footer className="relative z-10 py-12 text-center space-y-3">
+      <footer className="relative z-10 py-12 text-center space-y-3 font-normal-text border-t border-white/5 bg-[#04070f]">
         <div className="flex justify-center">
           <motion.div
-            animate={{ scale: [1, 1.2, 1] }}
+            animate={reducedMotion ? {} : { scale: [1, 1.25, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
             className="text-3xl"
           >
-            ❤️
+            💍
           </motion.div>
         </div>
-        <p className="text-white/25 text-sm">صُنعت بكل الحب · Weddingly</p>
-        <p className="text-white/15 text-xs">© {new Date().getFullYear()}</p>
+        <p className="text-amber-200/70 text-sm font-ruqah-bold">صُمّمت بكل حب وأناقة بواسطة Weddingly</p>
+        <p className="text-white/30 text-xs">جميع الحقوق محفوظة © {new Date().getFullYear()}</p>
       </footer>
     </main>
   );

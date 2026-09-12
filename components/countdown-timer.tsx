@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 
 interface CountdownTimerProps {
   targetDate: Date;
+  primaryColor?: string;
 }
 
-export function CountdownTimer({ targetDate }: CountdownTimerProps) {
+export function CountdownTimer({ targetDate, primaryColor = '#d4a853' }: CountdownTimerProps) {
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -40,38 +42,44 @@ export function CountdownTimer({ targetDate }: CountdownTimerProps) {
 
   if (isExpired) {
     return (
-      <div className="text-center p-6 bg-gradient-to-r from-pink-100 to-blue-100 rounded-lg animate-slideInUp">
-        <p className="text-lg font-semibold text-gray-900 animate-pulse">Event is happening now! 🎉</p>
+      <div className="text-center p-6 rounded-2xl bg-gradient-to-r from-amber-500/20 via-rose-500/20 to-amber-500/20 border border-amber-500/30 backdrop-blur-md animate-pulse">
+        <p className="text-xl font-bold text-amber-200 font-normal-text">✨ الحفل قيد الانعقاد الآن! أهلاً وسهلاً بكم 🎉</p>
       </div>
     );
   }
 
+  const items = [
+    { label: 'أيام', value: timeLeft.days },
+    { label: 'ساعات', value: String(timeLeft.hours).padStart(2, '0') },
+    { label: 'دقائق', value: String(timeLeft.minutes).padStart(2, '0') },
+    { label: 'ثواني', value: String(timeLeft.seconds).padStart(2, '0') },
+  ];
+
   return (
-    <div className="grid grid-cols-4 gap-4 animate-fadeIn">
-      <div className="text-center animate-slideInUp stagger-1">
-        <div className="bg-gradient-to-br from-pink-500 to-pink-600 rounded-lg p-4 text-white hover:shadow-lg transition-shadow hover:scale-105 duration-300">
-          <div className="text-3xl font-bold animate-pulse-slow">{timeLeft.days}</div>
-          <div className="text-xs uppercase tracking-wide">Days</div>
-        </div>
-      </div>
-      <div className="text-center animate-slideInUp stagger-2">
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-4 text-white hover:shadow-lg transition-shadow hover:scale-105 duration-300">
-          <div className="text-3xl font-bold animate-pulse-slow">{String(timeLeft.hours).padStart(2, '0')}</div>
-          <div className="text-xs uppercase tracking-wide">Hours</div>
-        </div>
-      </div>
-      <div className="text-center animate-slideInUp stagger-3">
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg p-4 text-white hover:shadow-lg transition-shadow hover:scale-105 duration-300">
-          <div className="text-3xl font-bold animate-pulse-slow">{String(timeLeft.minutes).padStart(2, '0')}</div>
-          <div className="text-xs uppercase tracking-wide">Mins</div>
-        </div>
-      </div>
-      <div className="text-center animate-slideInUp stagger-4">
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg p-4 text-white hover:shadow-lg transition-shadow hover:scale-105 duration-300">
-          <div className="text-3xl font-bold animate-pulse-slow">{String(timeLeft.seconds).padStart(2, '0')}</div>
-          <div className="text-xs uppercase tracking-wide">Secs</div>
-        </div>
-      </div>
+    <div className="grid grid-cols-4 gap-3 md:gap-4 font-normal-text">
+      {items.map((item, idx) => (
+        <motion.div
+          key={idx}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: idx * 0.1 }}
+          className="luxury-card p-3 md:p-4 text-center rounded-2xl border border-amber-500/20 hover:border-amber-500/50 transition-all duration-300 shadow-xl"
+          style={{ background: 'rgba(255, 255, 255, 0.03)', backdropFilter: 'blur(12px)' }}
+        >
+          <div
+            className="text-2xl md:text-4xl font-extrabold tracking-tight mb-1"
+            style={{
+              color: primaryColor,
+              textShadow: `0 0 20px ${primaryColor}40`,
+            }}
+          >
+            {item.value}
+          </div>
+          <div className="text-[11px] md:text-xs font-semibold text-white/50 tracking-wider">
+            {item.label}
+          </div>
+        </motion.div>
+      ))}
     </div>
   );
 }

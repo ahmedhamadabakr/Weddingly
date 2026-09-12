@@ -9,9 +9,28 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
+    if (!slug) {
+      return NextResponse.json({ error: 'Slug parameter is required' }, { status: 400 });
+    }
+
+    const decodedSlug = decodeURIComponent(slug);
+    const encodedSlug = encodeURIComponent(decodedSlug);
+
     await connectDB();
-    const event = await EventModel.findOne({ slug }).lean();
-    if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+
+    // Query for raw slug, decoded slug, or re-encoded slug to match any DB record
+    const event = await EventModel.findOne({
+      $or: [
+        { slug: slug },
+        { slug: decodedSlug },
+        { slug: encodedSlug }
+      ]
+    }).lean();
+
+    if (!event) {
+      return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+    }
+
     return NextResponse.json({ event });
   } catch (err) {
     console.error('[GET /api/events/slug/[slug]]', err);

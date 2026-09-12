@@ -1,7 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@300;400;600;700;800;900&family=Alexandria:wght@300;400;600;700;800;900&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
+
+/* ───────────────────────────────────────────────
+   CUSTOM FONTS DEFINITIONS
+   - Body & Normal text: Helvetica Neue LT
+   - Names text: SFRuqahLoop-Bold
+──────────────────────────────────────────────── */
+@font-face {
+  font-family: 'SFRuqahLoop-Bold';
+  src: local('SFRuqahLoop-Bold'), local('SF Ruqah Loop Bold'), local('SF Ruqah Loop'), local('Aref Ruqaa Bold'), local('Aref Ruqaa');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Helvetica Neue LT';
+  src: local('Helvetica Neue LT Arabic'), local('Helvetica Neue LT Pro'), local('Helvetica Neue LT'), local('Helvetica Neue'), local('Arial');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
 
 :root {
   --background: oklch(1 0 0);
@@ -75,8 +97,9 @@
 }
 
 @theme inline {
-  --font-sans: 'Geist', 'Geist Fallback';
+  --font-sans: 'Helvetica Neue LT', 'Helvetica Neue LT Arabic', 'Helvetica Neue', 'Cairo', 'Alexandria', Arial, sans-serif;
   --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --font-ruqah: 'SFRuqahLoop-Bold', 'SF Ruqah Loop', 'Aref Ruqaa', cursive;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -121,6 +144,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Helvetica Neue LT', 'Helvetica Neue LT Arabic', 'Helvetica Neue', 'Cairo', Arial, sans-serif;
   }
 }
 
@@ -448,3 +472,80 @@
 .luxury-bg *::-webkit-scrollbar-thumb:hover {
   background: rgba(255,255,255,0.2);
 }
+
+/* ───────────────────────────────────────────────
+   FONT UTILITY CLASSES (Helvetica Neue LT & SFRuqahLoop-Bold)
+──────────────────────────────────────────────── */
+.font-normal-text {
+  font-family: 'Helvetica Neue LT', 'Helvetica Neue LT Arabic', 'Helvetica Neue', 'Cairo', Arial, sans-serif !important;
+}
+
+.font-ruqah, .font-names, .font-ruqah-bold {
+  font-family: 'SFRuqahLoop-Bold', 'SF Ruqah Loop', 'Aref Ruqaa', 'Reem Kufi', cursive, serif !important;
+  font-weight: 700 !important;
+}
+
+/* Metallic Gold Foil Effect for Names */
+.gold-foil-text {
+  background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #aa771c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 2px 12px rgba(212, 168, 83, 0.35));
+}
+
+.rose-gold-foil-text {
+  background: linear-gradient(135deg, #e8627a 0%, #ffd1dc 25%, #d45068 50%, #fff0f3 75%, #b8324f 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 2px 12px rgba(232, 98, 122, 0.35));
+}
+
+/* Realistic 3D Wax Seal Envelope */
+.wax-seal-3d {
+  background: radial-gradient(circle at 35% 35%, #e63946 0%, #b7094c 50%, #590d22 100%);
+  box-shadow: 
+    0 10px 25px rgba(183, 9, 76, 0.5),
+    inset 0 2px 4px rgba(255, 255, 255, 0.4),
+    inset 0 -4px 6px rgba(0, 0, 0, 0.6);
+  border: 2px solid rgba(255, 215, 0, 0.5);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.wax-seal-3d:hover {
+  transform: scale(1.08) rotate(3deg);
+  box-shadow: 
+    0 15px 35px rgba(212, 168, 83, 0.6),
+    inset 0 3px 6px rgba(255, 255, 255, 0.6),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.7);
+}
+
+/* Realistic Luxury Card Frame */
+.luxury-card-frame {
+  background: rgba(12, 16, 28, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(212, 168, 83, 0.3);
+  box-shadow: 
+    0 25px 80px rgba(0, 0, 0, 0.7),
+    0 0 40px rgba(212, 168, 83, 0.1),
+    inset 0 0 20px rgba(255, 255, 255, 0.02);
+  border-radius: 1.5rem;
+}
+
+.gold-glow-border {
+  border: 1px solid rgba(212, 168, 83, 0.4);
+  box-shadow: 0 0 20px rgba(212, 168, 83, 0.15);
+}
+
+/* Vinyl Disc Animation for Music Player */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
+}
+
