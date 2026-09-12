@@ -205,9 +205,9 @@ export default function InvitationPage() {
   /* ── Loading Screen ── */
   if (loading) {
     return (
-      <div dir="rtl" className="h-screen flex flex-col items-center justify-center bg-[#060a14] text-white gap-4 font-normal-text">
-        <div className="w-12 h-12 border-2 border-amber-500/30 border-t-amber-400 rounded-full animate-spin" />
-        <p className="text-amber-200/50 text-sm tracking-widest animate-pulse">جاري تحميل الدعوة الفاخرة...</p>
+      <div dir="rtl" className="h-screen flex flex-col items-center justify-center bg-[#faf8f5] text-slate-900 gap-4 font-normal-text">
+        <div className="w-12 h-12 border-2 border-amber-600/30 border-t-amber-600 rounded-full animate-spin" />
+        <p className="text-amber-800 text-sm tracking-widest animate-pulse font-bold">جاري تحميل الدعوة الفاخرة...</p>
       </div>
     );
   }
@@ -215,9 +215,9 @@ export default function InvitationPage() {
   /* ── Not Found Screen ── */
   if (!event) {
     return (
-      <div dir="rtl" className="h-screen flex flex-col items-center justify-center bg-[#060a14] text-white gap-4 font-normal-text">
+      <div dir="rtl" className="h-screen flex flex-col items-center justify-center bg-[#faf8f5] text-slate-900 gap-4 font-normal-text">
         <div className="text-6xl">💌</div>
-        <p className="text-white/60 text-lg">عذراً، هذه الدعوة غير موجودة</p>
+        <p className="text-slate-600 text-lg font-bold">عذراً، هذه الدعوة غير موجودة</p>
       </div>
     );
   }
@@ -238,12 +238,12 @@ export default function InvitationPage() {
       <div
         dir="rtl"
         className="min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden relative font-normal-text select-none"
-        style={{ background: `linear-gradient(160deg, #060a14 0%, #0d0918 60%, #060a14 100%)` }}
+        style={{ background: `linear-gradient(160deg, #fffdfa 0%, #f7f3eb 60%, #fffdfa 100%)` }}
       >
         {/* Background glowing lights */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full blur-[160px]" style={{ background: `${primary}15` }} />
-          <div className="absolute bottom-[-10%] left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full blur-[140px]" style={{ background: `${secondary}12` }} />
+          <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full blur-[160px]" style={{ background: `${primary}20` }} />
+          <div className="absolute bottom-[-10%] left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full blur-[140px]" style={{ background: `${secondary}15` }} />
         </div>
 
         {/* Ambient floating sparkles */}
@@ -257,27 +257,27 @@ export default function InvitationPage() {
           className="relative z-10 w-full max-w-lg mx-auto"
         >
           {/* Outer Card Frame with Foil Border */}
-          <div className="luxury-card-frame p-8 md:p-12 relative overflow-hidden border border-amber-500/40 shadow-2xl">
+          <div className="luxury-card-frame p-8 md:p-12 relative overflow-hidden border border-amber-500/40 shadow-2xl bg-white/95">
             {/* Corner Ornaments */}
-            <div className="absolute top-3 left-3 text-amber-500/40 text-xl font-mono" aria-hidden="true">✦</div>
-            <div className="absolute top-3 right-3 text-amber-500/40 text-xl font-mono" aria-hidden="true">✦</div>
-            <div className="absolute bottom-3 left-3 text-amber-500/40 text-xl font-mono" aria-hidden="true">✦</div>
-            <div className="absolute bottom-3 right-3 text-amber-500/40 text-xl font-mono" aria-hidden="true">✦</div>
+            <div className="absolute top-3 left-3 text-amber-600/50 text-xl font-mono" aria-hidden="true">✦</div>
+            <div className="absolute top-3 right-3 text-amber-600/50 text-xl font-mono" aria-hidden="true">✦</div>
+            <div className="absolute bottom-3 left-3 text-amber-600/50 text-xl font-mono" aria-hidden="true">✦</div>
+            <div className="absolute bottom-3 right-3 text-amber-600/50 text-xl font-mono" aria-hidden="true">✦</div>
 
             {/* Personalized Guest Welcome Header */}
             {guestParam && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-6 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs inline-flex items-center gap-2"
+                className="mb-6 px-4 py-2 rounded-full bg-amber-50 border border-amber-500/30 text-amber-900 text-xs inline-flex items-center gap-2"
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>دعوة مخصصة للكريّم: <strong className="font-ruqah-bold text-sm text-white">{guestParam}</strong></span>
+                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                <span>دعوة مخصصة للكريّم: <strong className="font-ruqah-bold text-sm text-slate-900">{guestParam}</strong></span>
               </motion.div>
             )}
 
             {/* Subtitle */}
-            <p className="text-amber-200/70 text-xs tracking-[0.3em] font-semibold mb-4">
+            <p className="text-amber-800 text-xs tracking-[0.3em] font-semibold mb-4">
               دعوة حضور حفل مبارك
             </p>
 
@@ -290,7 +290,7 @@ export default function InvitationPage() {
                   </h1>
                   <div className="flex items-center justify-center gap-3 my-2 opacity-80">
                     <span className="h-px w-12 bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
-                    <span className="text-amber-300 text-2xl font-serif">&amp;</span>
+                    <span className="text-amber-600 text-2xl font-serif">&amp;</span>
                     <span className="h-px w-12 bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
                   </div>
                   <h1 className="text-4xl md:text-6xl font-bold font-ruqah-bold gold-foil-text leading-tight">
@@ -305,13 +305,13 @@ export default function InvitationPage() {
             </div>
 
             {/* Quranic Verse */}
-            <div className="my-6 px-4 py-3 rounded-xl bg-white/[0.02] border border-amber-500/20 text-white/70 text-xs leading-relaxed italic">
+            <div className="my-6 px-4 py-3 rounded-xl bg-amber-50/60 border border-amber-500/25 text-amber-900 text-xs leading-relaxed italic font-serif">
               ﴿ وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا ﴾
             </div>
 
             {/* Music track info */}
-            <div className="mb-8 flex items-center justify-center gap-2 text-white/40 text-xs">
-              <Music className="w-3.5 h-3.5 text-amber-400 animate-pulse" aria-hidden="true" />
+            <div className="mb-8 flex items-center justify-center gap-2 text-slate-600 text-xs font-semibold">
+              <Music className="w-3.5 h-3.5 text-amber-600 animate-pulse" aria-hidden="true" />
               <span>الموسيقى: {track.nameAr}</span>
             </div>
 
@@ -333,13 +333,13 @@ export default function InvitationPage() {
   }
 
   /* ══════════════════════════════════════════════════════════
-     📜 MAIN INVITATION PAGE (Modern, Luxurious, Realistic)
+     📜 MAIN INVITATION PAGE (Modern White / Pearl Light Theme)
   ══════════════════════════════════════════════════════════ */
   return (
     <main
       dir="rtl"
-      className="relative overflow-x-hidden min-h-screen text-white font-normal-text selection:bg-amber-500/30 select-none"
-      style={{ background: `linear-gradient(160deg, #060a14 0%, #0c0818 50%, #060a14 100%)` }}
+      className="relative overflow-x-hidden min-h-screen text-slate-900 font-normal-text selection:bg-amber-500/30 select-none"
+      style={{ background: `linear-gradient(160deg, #faf8f5 0%, #f5f0e6 50%, #faf8f5 100%)` }}
     >
       {/* Top progress bar */}
       <motion.div
@@ -352,8 +352,8 @@ export default function InvitationPage() {
 
       {/* Ambient background glows */}
       <div className="fixed inset-0 pointer-events-none -z-10">
-        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[850px] h-[550px] rounded-full blur-[190px]" style={{ background: `${primary}10` }} />
-        <div className="absolute bottom-[-10%] left-1/2 -translate-x-1/2 w-[650px] h-[450px] rounded-full blur-[160px]" style={{ background: `${secondary}08` }} />
+        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[850px] h-[550px] rounded-full blur-[190px]" style={{ background: `${primary}15` }} />
+        <div className="absolute bottom-[-10%] left-1/2 -translate-x-1/2 w-[650px] h-[450px] rounded-full blur-[160px]" style={{ background: `${secondary}12` }} />
       </div>
 
       {/* Floating Vinyl Audio Controller */}
@@ -362,10 +362,10 @@ export default function InvitationPage() {
           onClick={toggleMusic}
           aria-label={playing ? 'إيقاف الموسيقى' : 'تشغيل الموسيقى'}
           title={playing ? 'إيقاف الموسيقى' : 'تشغيل الموسيقى'}
-          className="w-14 h-14 rounded-full luxury-card-frame border border-amber-500/40 flex items-center justify-center shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70"
+          className="w-14 h-14 rounded-full luxury-card-frame border border-amber-500/40 flex items-center justify-center shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70 bg-white/90"
         >
           <motion.div
-            className="w-10 h-10 rounded-full bg-neutral-900 border border-amber-500/50 flex items-center justify-center relative overflow-hidden"
+            className="w-10 h-10 rounded-full bg-slate-900 border border-amber-500/50 flex items-center justify-center relative overflow-hidden"
             animate={playing && !reducedMotion ? { rotate: 360 } : {}}
             transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
           >
@@ -388,17 +388,17 @@ export default function InvitationPage() {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-200 text-sm font-semibold shadow-lg"
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-amber-100/90 border border-amber-300 text-amber-950 text-sm font-semibold shadow-md"
             >
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>نرحب بحضورك الكريّم: <strong className="font-ruqah-bold text-lg text-white font-bold">{guestParam}</strong></span>
+              <Sparkles className="w-4 h-4 text-amber-600" />
+              <span>نرحب بحضورك الكريّم: <strong className="font-ruqah-bold text-lg text-slate-900 font-bold">{guestParam}</strong></span>
             </motion.div>
           )}
 
           {/* Bismillah Header */}
           <div className="space-y-2">
-            <p className="text-amber-200/50 text-base tracking-[0.2em]">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</p>
-            <div className="w-20 h-px mx-auto rounded-full bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
+            <p className="text-amber-800/80 text-base tracking-[0.2em] font-bold">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</p>
+            <div className="w-20 h-px mx-auto rounded-full bg-gradient-to-r from-transparent via-amber-500 to-transparent" />
           </div>
 
           {/* Groom & Bride Names in SFRuqahLoop-Bold */}
@@ -415,9 +415,9 @@ export default function InvitationPage() {
                 </motion.h1>
 
                 <div className="flex items-center justify-center gap-4 my-2">
-                  <div className="h-px w-16 bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
+                  <div className="h-px w-16 bg-gradient-to-r from-transparent via-amber-500 to-transparent" />
                   <Heart className="w-6 h-6 text-rose-500 fill-rose-500 animate-pulse" aria-hidden="true" />
-                  <div className="h-px w-16 bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
+                  <div className="h-px w-16 bg-gradient-to-r from-transparent via-amber-500 to-transparent" />
                 </div>
 
                 <motion.h1
@@ -446,22 +446,20 @@ export default function InvitationPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold border border-amber-500/30 bg-amber-500/10 text-amber-300"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold border border-amber-400/50 bg-amber-100/90 text-amber-900 shadow-sm"
           >
-            <Sparkles className="w-4 h-4 text-amber-400" />
+            <Sparkles className="w-4 h-4 text-amber-600" />
             <span>{event.type === 'Wedding' ? 'حفل زفاف مبارك' : event.type === 'Engagement' ? 'حفل خطوبة مبارك' : 'حفل كتب كتاب'}</span>
           </motion.div>
-
-         
 
           {/* Scroll hint */}
           <motion.div
             animate={reducedMotion ? {} : { y: [0, 8, 0] }}
             transition={{ duration: 2, repeat: Infinity }}
-            className="flex flex-col items-center gap-1 text-white/30 pt-8"
+            className="flex flex-col items-center gap-1 text-slate-500 pt-8"
           >
-            <span className="text-xs tracking-widest">اسحب لاستكشاف التفاصيل</span>
-            <ChevronDown className="w-4 h-4 text-amber-400" />
+            <span className="text-xs tracking-widest font-semibold">اسحب لاستكشاف التفاصيل</span>
+            <ChevronDown className="w-4 h-4 text-amber-600" />
           </motion.div>
         </motion.div>
       </section>
@@ -474,17 +472,17 @@ export default function InvitationPage() {
               type="button"
               onClick={() => setIsImageOpen(true)}
               aria-label="تكبير الصورة"
-              className="relative w-full block rounded-3xl overflow-hidden border border-amber-500/30 shadow-2xl group cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70"
+              className="relative w-full block rounded-3xl overflow-hidden border border-amber-500/40 shadow-2xl group cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70 bg-white"
             >
               <img
                 src={event.coverImage}
                 alt={event.title}
-                className="w-full h-auto block transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                className="w-full h-auto block transition-transform duration-700 ease-out group-hover:scale-[1.02]"
               />
               {/* Gradient scrim for legibility + hint */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#060a14]/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="absolute bottom-4 inset-x-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/50 backdrop-blur-sm border border-amber-400/30 text-amber-100 text-xs font-semibold">
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900/80 backdrop-blur-sm border border-amber-400/40 text-amber-100 text-xs font-semibold">
                   <ZoomIn className="w-3.5 h-3.5" aria-hidden="true" />
                   اضغط للتكبير
                 </span>
@@ -505,7 +503,7 @@ export default function InvitationPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+            className="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4"
             onClick={() => setIsImageOpen(false)}
           >
             <button
@@ -532,22 +530,22 @@ export default function InvitationPage() {
 
       {/* ── QURANIC VERSE & MESSAGE ── */}
       <Section className="px-4 py-16">
-        <div className="max-w-2xl mx-auto luxury-card-frame p-8 md:p-12 text-center space-y-6 border border-amber-500/30">
+        <div className="max-w-2xl mx-auto luxury-card-frame bg-white/95 p-8 md:p-12 text-center space-y-6 border border-amber-500/40 shadow-xl">
           <div className="text-4xl" aria-hidden="true">✨</div>
-          <p className="text-amber-200 font-serif text-lg md:text-xl leading-relaxed italic">
+          <p className="text-amber-950 font-serif text-lg md:text-xl leading-relaxed italic">
             &ldquo;وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً&rdquo;
           </p>
 
           {event.message && (
-            <div className="pt-4 border-t border-white/10">
-              <p className="text-white/80 text-base md:text-lg leading-relaxed font-normal-text">
+            <div className="pt-4 border-t border-amber-200/60">
+              <p className="text-slate-800 text-base md:text-lg leading-relaxed font-normal-text font-semibold">
                 {event.message}
               </p>
             </div>
           )}
 
-          <div className="w-16 h-px mx-auto bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
-          <p className="text-amber-200/80 font-ruqah-bold text-xl font-bold">
+          <div className="w-16 h-px mx-auto bg-gradient-to-r from-transparent via-amber-500 to-transparent" />
+          <p className="text-amber-900 font-ruqah-bold text-xl font-bold">
             فرحتنا تكتمل بمشاركتكم وحضوركم الغالي
           </p>
         </div>
@@ -557,7 +555,7 @@ export default function InvitationPage() {
       <Section className="px-4 py-16">
         <div className="max-w-2xl mx-auto text-center space-y-6">
           <h2 className="text-3xl md:text-4xl font-bold font-ruqah-bold gold-foil-text">العد التنازلي للموعد</h2>
-          <p className="text-white/50 text-sm font-normal-text">المتبقي على حلول لحظتنا السعيدة</p>
+          <p className="text-slate-600 text-sm font-bold font-normal-text">المتبقي على حلول لحظتنا السعيدة</p>
           <div className="pt-2">
             <CountdownTimer targetDate={event.dateTime} primaryColor={primary} />
           </div>
@@ -569,38 +567,38 @@ export default function InvitationPage() {
         <div className="max-w-xl mx-auto text-center space-y-8">
           <h2 className="text-3xl md:text-4xl font-bold font-ruqah-bold gold-foil-text">توقيت الحفل</h2>
 
-          <div className="luxury-card-frame p-8 md:p-10 space-y-6 border border-amber-500/30">
+          <div className="luxury-card-frame bg-white/95 p-8 md:p-10 space-y-6 border border-amber-500/40 shadow-xl">
             {/* Date */}
             <div className="flex items-center justify-between gap-4">
-              <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30">
-                <Calendar className="w-6 h-6 text-amber-400" aria-hidden="true" />
+              <div className="p-3 rounded-2xl bg-amber-100 border border-amber-300">
+                <Calendar className="w-6 h-6 text-amber-700" aria-hidden="true" />
               </div>
               <div className="text-right flex-1">
-                <p className="text-white/40 text-xs mb-1 font-semibold">تاريخ اليوم السعيد</p>
-                <p className="text-white text-xl font-bold font-normal-text">{arDate(event.dateTime)}</p>
+                <p className="text-slate-500 text-xs mb-1 font-bold">تاريخ اليوم السعيد</p>
+                <p className="text-slate-900 text-xl font-bold font-normal-text">{arDate(event.dateTime)}</p>
               </div>
             </div>
 
-            <div className="w-full h-px bg-white/10" />
+            <div className="w-full h-px bg-amber-200/60" />
 
             {/* Time */}
             <div className="flex items-center justify-between gap-4">
-              <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30">
-                <Clock className="w-6 h-6 text-amber-400" aria-hidden="true" />
+              <div className="p-3 rounded-2xl bg-amber-100 border border-amber-300">
+                <Clock className="w-6 h-6 text-amber-700" aria-hidden="true" />
               </div>
               <div className="text-right flex-1">
-                <p className="text-white/40 text-xs mb-1 font-semibold">توقيت الاستقبال</p>
-                <p className="text-amber-300 text-2xl font-bold font-normal-text">في تمام {arTime(event.dateTime)}</p>
+                <p className="text-slate-500 text-xs mb-1 font-bold">توقيت الاستقبال</p>
+                <p className="text-amber-800 text-2xl font-bold font-normal-text">في تمام {arTime(event.dateTime)}</p>
               </div>
             </div>
 
             {/* Add to calendar button */}
-            <div className="pt-4 border-t border-white/10">
+            <div className="pt-4 border-t border-amber-200/60">
               <button
                 onClick={() => downloadICS(event.title, event.dateTime, event.location)}
-                className="w-full py-3.5 rounded-xl bg-white/5 border border-amber-500/30 hover:bg-amber-500/20 text-amber-200 font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70"
+                className="w-full py-3.5 rounded-xl bg-amber-100/80 hover:bg-amber-200/80 border border-amber-300 text-amber-950 font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70 shadow-sm"
               >
-                <CalendarPlus className="w-4 h-4 text-amber-400" aria-hidden="true" />
+                <CalendarPlus className="w-4 h-4 text-amber-700" aria-hidden="true" />
                 <span>إضافة المناسبة إلى التقويم (.ics)</span>
               </button>
             </div>
@@ -613,27 +611,27 @@ export default function InvitationPage() {
         <div className="max-w-2xl mx-auto text-center space-y-8">
           <h2 className="text-3xl md:text-4xl font-bold font-ruqah-bold gold-foil-text">موقع الاحتفال</h2>
 
-          <div className="luxury-card-frame p-6 md:p-10 space-y-6 border border-amber-500/30">
+          <div className="luxury-card-frame bg-white/95 p-6 md:p-10 space-y-6 border border-amber-500/40 shadow-xl">
             <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-amber-500 to-rose-500 flex items-center justify-center shadow-xl">
               <MapPin className="w-8 h-8 text-white" aria-hidden="true" />
             </div>
 
             <div className="space-y-2">
-              <p className="text-white/50 text-xs tracking-widest font-semibold">عنوان القاعة / المكان</p>
-              <p className="text-white text-2xl font-bold leading-relaxed font-normal-text">{event.location}</p>
+              <p className="text-slate-500 text-xs tracking-widest font-bold">عنوان القاعة / المكان</p>
+              <p className="text-slate-900 text-2xl font-bold leading-relaxed font-normal-text">{event.location}</p>
             </div>
 
-            <p className="text-amber-200/70 text-sm italic">
+            <p className="text-amber-900/90 text-sm italic font-semibold">
               &ldquo;ننتظر إطلالتكم الميمونة لتزيدوا حفلنا إشراقاً وأنساً&rdquo;
             </p>
 
             {/* Embedded Live Map Preview */}
-            <div className="w-full h-64 sm:h-80 rounded-2xl overflow-hidden border border-amber-500/20 shadow-inner my-4 relative">
+            <div className="w-full h-64 sm:h-80 rounded-2xl overflow-hidden border border-amber-300 shadow-inner my-4 relative">
               <iframe
                 title="خريطة الموقع"
                 width="100%"
                 height="100%"
-                className="w-full h-full border-0 grayscale hover:grayscale-0 transition-all duration-500"
+                className="w-full h-full border-0 transition-all duration-500"
                 loading="lazy"
                 allowFullScreen
                 src={`https://maps.google.com/maps?q=${encodeURIComponent(event.googleMapsUrl || event.location)}&output=embed`}
@@ -641,14 +639,14 @@ export default function InvitationPage() {
             </div>
 
             {/* Maps Action Button */}
-            <div className="pt-4 border-t border-white/10">
+            <div className="pt-4 border-t border-amber-200/60">
               <a
                 href={formatGoogleMapsUrl(event.googleMapsUrl, event.location)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-gray-950 font-bold text-sm flex items-center justify-center gap-3 transition-all shadow-lg hover:shadow-amber-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70"
+                className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-sm flex items-center justify-center gap-3 transition-all shadow-lg hover:shadow-amber-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70"
               >
-                <Navigation className="w-5 h-5 text-gray-950 fill-gray-950" aria-hidden="true" />
+                <Navigation className="w-5 h-5 text-slate-950 fill-slate-950" aria-hidden="true" />
                 <span>افتح الموقع مباشرة على خرائط Google 🗺️</span>
               </a>
             </div>
@@ -661,10 +659,10 @@ export default function InvitationPage() {
         <div className="max-w-md mx-auto space-y-6 text-center">
           <div className="space-y-2">
             <h2 className="text-3xl md:text-4xl font-bold font-ruqah-bold gold-foil-text">تأكيد الحضور (RSVP)</h2>
-            <p className="text-white/50 text-sm font-normal-text">لطفاً أكّدوا حضوركم المبارك ليتسنى لنا حسن الاستقبال</p>
+            <p className="text-slate-600 text-sm font-bold font-normal-text">لطفاً أكّدوا حضوركم المبارك ليتسنى لنا حسن الاستقبال</p>
           </div>
 
-          <div className="luxury-card-frame p-8 border border-amber-500/30 shadow-2xl">
+          <div className="luxury-card-frame bg-white/95 p-8 border border-amber-500/40 shadow-xl">
             <RSVPForm eventId={event.id} theme={{ primary, secondary }} />
           </div>
         </div>
@@ -675,15 +673,15 @@ export default function InvitationPage() {
         <div className="max-w-md mx-auto text-center space-y-6">
           <div className="space-y-2">
             <h2 className="text-3xl font-bold font-ruqah-bold gold-foil-text">بطاقة الحضور الرقمية (VIP)</h2>
-            <p className="text-white/40 text-xs font-normal-text">امسح الكود أو استخدم الرابط لمشاركة الفرحة مع الأحباب</p>
+            <p className="text-slate-600 text-xs font-bold font-normal-text">امسح الكود أو استخدم الرابط لمشاركة الفرحة مع الأحباب</p>
           </div>
 
-          <div className="luxury-card-frame p-8 border border-amber-500/40 space-y-6 shadow-2xl relative">
-            <div className="p-4 rounded-2xl bg-white inline-block mx-auto shadow-2xl">
-              <QRCode value={inviteUrl} size={170} fgColor="#060a14" bgColor="#ffffff" />
+          <div className="luxury-card-frame bg-white/95 p-8 border border-amber-500/40 space-y-6 shadow-xl relative">
+            <div className="p-4 rounded-2xl bg-white inline-block mx-auto shadow-md border border-amber-200">
+              <QRCode value={inviteUrl} size={170} fgColor="#0f172a" bgColor="#ffffff" />
             </div>
 
-            <p className="text-amber-200/70 text-xs font-mono break-all bg-white/5 p-2 rounded-lg border border-white/10">
+            <p className="text-amber-950 text-xs font-mono break-all bg-amber-50 p-2.5 rounded-lg border border-amber-300">
               {inviteUrl}
             </p>
 
@@ -700,9 +698,9 @@ export default function InvitationPage() {
               <button
                 onClick={handleCopyLink}
                 aria-label={copied ? 'تم نسخ الرابط' : 'نسخ الرابط'}
-                className="py-3 px-4 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-200 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70"
+                className="py-3 px-4 rounded-xl bg-amber-100 hover:bg-amber-200 border border-amber-300 text-amber-950 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70"
               >
-                {copied ? <CheckCircle className="w-4 h-4 text-emerald-400" aria-hidden="true" /> : <Share2 className="w-4 h-4 text-amber-400" aria-hidden="true" />}
+                {copied ? <CheckCircle className="w-4 h-4 text-emerald-600" aria-hidden="true" /> : <Share2 className="w-4 h-4 text-amber-700" aria-hidden="true" />}
                 <span>{copied ? 'تم النسخ!' : 'نسخ الرابط'}</span>
               </button>
             </div>
@@ -711,7 +709,7 @@ export default function InvitationPage() {
       </Section>
 
       {/* ── FOOTER ── */}
-      <footer className="relative z-10 py-12 text-center space-y-3 font-normal-text border-t border-white/5 bg-[#04070f]">
+      <footer className="relative z-10 py-12 text-center space-y-3 font-normal-text border-t border-amber-200/80 bg-[#f7f3eb]">
         <div className="flex justify-center">
           <motion.div
             animate={reducedMotion ? {} : { scale: [1, 1.25, 1] }}
@@ -721,8 +719,8 @@ export default function InvitationPage() {
             💍
           </motion.div>
         </div>
-        <p className="text-amber-200/70 text-sm font-ruqah-bold">صُمّمت بكل حب وأناقة بواسطة Weddingly</p>
-        <p className="text-white/30 text-xs">جميع الحقوق محفوظة © {new Date().getFullYear()}</p>
+        <p className="text-amber-900 text-sm font-ruqah-bold font-bold">صُمّمت بكل حب وأناقة بواسطة Weddingly</p>
+        <p className="text-slate-500 text-xs">جميع الحقوق محفوظة © {new Date().getFullYear()}</p>
       </footer>
     </main>
   );

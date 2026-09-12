@@ -42,8 +42,8 @@ export function CountdownTimer({ targetDate, primaryColor = '#d4a853' }: Countdo
 
   if (isExpired) {
     return (
-      <div className="text-center p-6 rounded-2xl bg-gradient-to-r from-amber-500/20 via-rose-500/20 to-amber-500/20 border border-amber-500/30 backdrop-blur-md animate-pulse">
-        <p className="text-xl font-bold text-amber-200 font-normal-text">✨ الحفل قيد الانعقاد الآن! أهلاً وسهلاً بكم 🎉</p>
+      <div className="text-center p-6 rounded-2xl bg-amber-50 border border-amber-300 shadow-md animate-pulse">
+        <p className="text-xl font-bold text-amber-900 font-normal-text">✨ الحفل قيد الانعقاد الآن! أهلاً وسهلاً بكم 🎉</p>
       </div>
     );
   }
@@ -63,19 +63,17 @@ export function CountdownTimer({ targetDate, primaryColor = '#d4a853' }: Countdo
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: idx * 0.1 }}
-          className="luxury-card p-3 md:p-4 text-center rounded-2xl border border-amber-500/20 hover:border-amber-500/50 transition-all duration-300 shadow-xl"
-          style={{ background: 'rgba(255, 255, 255, 0.03)', backdropFilter: 'blur(12px)' }}
+          className="luxury-card p-3 md:p-4 text-center rounded-2xl border border-amber-500/30 hover:border-amber-500/60 transition-all duration-300 shadow-lg bg-white/90"
         >
           <div
             className="text-2xl md:text-4xl font-extrabold tracking-tight mb-1"
             style={{
-              color: primaryColor,
-              textShadow: `0 0 20px ${primaryColor}40`,
+              color: primaryColor === '#d4a853' ? '#b48325' : primaryColor,
             }}
           >
             {item.value}
           </div>
-          <div className="text-[11px] md:text-xs font-semibold text-white/50 tracking-wider">
+          <div className="text-[11px] md:text-xs font-bold text-slate-700 tracking-wider">
             {item.label}
           </div>
         </motion.div>

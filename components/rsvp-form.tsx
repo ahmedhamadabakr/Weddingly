@@ -56,12 +56,12 @@ export function RSVPForm({ eventId, theme, onSubmit }: RSVPFormProps) {
         >
           <CheckCircle2 className="w-10 h-10 text-white" />
         </motion.div>
-        <h3 className="text-2xl font-bold text-white mb-2">تم تأكيد حضورك بنجاح! 🎉</h3>
-        <p className="text-white/70 text-base leading-relaxed">
-          أهلاً بك <span className="font-ruqah-bold text-amber-300 text-xl font-bold px-1">{name}</span>، نسعد جداً بوجودكم ومشاركتنا هذه الفرحة المباركة.
+        <h3 className="text-2xl font-bold text-slate-900 mb-2">تم تأكيد حضورك بنجاح! 🎉</h3>
+        <p className="text-slate-700 text-base leading-relaxed">
+          أهلاً بك <span className="font-ruqah-bold text-amber-800 text-xl font-bold px-1">{name}</span>، نسعد جداً بوجودكم ومشاركتنا هذه الفرحة المباركة.
         </p>
-        <div className="mt-6 p-4 rounded-2xl bg-white/5 border border-white/10 text-white/50 text-xs flex items-center justify-center gap-2">
-          <Heart className="w-4 h-4 text-rose-400 fill-rose-400" />
+        <div className="mt-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-slate-600 text-xs flex items-center justify-center gap-2">
+          <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
           <span>تم تسجيل حضور {numAttendees} {numAttendees === 1 ? 'مرافق' : 'ضيوف'}</span>
         </div>
       </motion.div>
@@ -72,52 +72,46 @@ export function RSVPForm({ eventId, theme, onSubmit }: RSVPFormProps) {
     <form onSubmit={handleSubmit} className="space-y-5 w-full max-w-md mx-auto font-normal-text">
       {/* Name Input */}
       <div>
-        <label className="block text-xs font-semibold text-amber-200/70 uppercase tracking-widest mb-2 text-right">
+        <label className="block text-xs font-bold text-amber-900 uppercase tracking-widest mb-2 text-right">
           الاسم الكريم *
         </label>
         <div className="relative">
-          <User className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-400/50" />
+          <User className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-600/60" />
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="أدخل اسمك كاملاً"
             disabled={submitting}
-            className="w-full pr-11 pl-4 py-3.5 rounded-xl text-sm text-white placeholder-white/30 disabled:opacity-50 transition-all outline-none font-ruqah-bold text-base"
-            style={{
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(212,168,83,0.25)',
-            }}
-            onFocus={(e) => (e.target.style.borderColor = primary)}
-            onBlur={(e)  => (e.target.style.borderColor = 'rgba(212,168,83,0.25)')}
+            className="w-full pr-11 pl-4 py-3.5 rounded-xl text-sm text-slate-900 placeholder-slate-400 bg-white border border-amber-300 focus:border-amber-500 disabled:opacity-50 transition-all outline-none font-ruqah-bold text-base shadow-sm"
           />
         </div>
       </div>
 
       {/* Attendees counter */}
       <div>
-        <label className="block text-xs font-semibold text-amber-200/70 uppercase tracking-widest mb-2 text-right">
+        <label className="block text-xs font-bold text-amber-900 uppercase tracking-widest mb-2 text-right">
           عدد الأفراد القادمين (بما فيهم أنت)
         </label>
-        <div className="flex items-center gap-4 p-1.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,168,83,0.25)' }}>
+        <div className="flex items-center gap-4 p-1.5 rounded-xl bg-white border border-amber-300 shadow-sm">
           <button
             type="button"
             onClick={() => setNumAttendees(Math.max(1, numAttendees - 1))}
             disabled={numAttendees <= 1}
-            className="w-10 h-10 rounded-lg text-white/80 hover:text-white font-bold text-xl transition-all disabled:opacity-30 flex items-center justify-center hover:bg-white/10"
+            className="w-10 h-10 rounded-lg text-slate-700 hover:text-slate-900 font-bold text-xl transition-all disabled:opacity-30 flex items-center justify-center hover:bg-amber-100/50"
           >
             −
           </button>
           <div className="flex-1 flex items-center justify-center gap-2">
-            <Users className="w-4 h-4 text-amber-400/70" />
-            <span className="text-amber-200 font-extrabold text-2xl">{numAttendees}</span>
-            <span className="text-white/60 text-sm">{numAttendees === 1 ? 'شخص' : 'أشخاص'}</span>
+            <Users className="w-4 h-4 text-amber-600/70" />
+            <span className="text-amber-800 font-extrabold text-2xl">{numAttendees}</span>
+            <span className="text-slate-600 text-sm">{numAttendees === 1 ? 'شخص' : 'أشخاص'}</span>
           </div>
           <button
             type="button"
             onClick={() => setNumAttendees(Math.min(10, numAttendees + 1))}
             disabled={numAttendees >= 10}
-            className="w-10 h-10 rounded-lg text-white/80 hover:text-white font-bold text-xl transition-all disabled:opacity-30 flex items-center justify-center hover:bg-white/10"
+            className="w-10 h-10 rounded-lg text-slate-700 hover:text-slate-900 font-bold text-xl transition-all disabled:opacity-30 flex items-center justify-center hover:bg-amber-100/50"
           >
             +
           </button>
@@ -126,24 +120,18 @@ export function RSVPForm({ eventId, theme, onSubmit }: RSVPFormProps) {
 
       {/* Optional Note / Warm wishes */}
       <div>
-        <label className="block text-xs font-semibold text-amber-200/70 uppercase tracking-widest mb-2 text-right">
+        <label className="block text-xs font-bold text-amber-900 uppercase tracking-widest mb-2 text-right">
           كلمة تبريك أو تهنئة للعروسين (اختياري)
         </label>
         <div className="relative">
-          <MessageSquare className="absolute right-3.5 top-3.5 w-4 h-4 text-amber-400/50" />
+          <MessageSquare className="absolute right-3.5 top-3.5 w-4 h-4 text-amber-600/60" />
           <textarea
             rows={2}
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="اكتب كلمة طيبة أو دعاء للعروسين..."
             disabled={submitting}
-            className="w-full pr-11 pl-4 py-3 rounded-xl text-sm text-white placeholder-white/30 disabled:opacity-50 transition-all outline-none font-normal-text resize-none"
-            style={{
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(212,168,83,0.25)',
-            }}
-            onFocus={(e) => (e.target.style.borderColor = primary)}
-            onBlur={(e)  => (e.target.style.borderColor = 'rgba(212,168,83,0.25)')}
+            className="w-full pr-11 pl-4 py-3 rounded-xl text-sm text-slate-900 placeholder-slate-400 bg-white border border-amber-300 focus:border-amber-500 disabled:opacity-50 transition-all outline-none font-normal-text resize-none shadow-sm"
           />
         </div>
       </div>
@@ -155,7 +143,7 @@ export function RSVPForm({ eventId, theme, onSubmit }: RSVPFormProps) {
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="text-rose-400 text-xs text-center"
+            className="text-rose-600 text-xs text-center font-bold"
           >
             {error}
           </motion.p>
