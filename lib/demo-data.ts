@@ -10,6 +10,7 @@ export const DEMO_EVENT: Omit<Event, 'id' | 'createdAt' | 'guests'> = {
   message: 'We are thrilled to invite you to celebrate our special day!',
   slug: 'demo-wedding-abcd1234',
   coverImage: '',
+  passcode: '1234',
   views: 0,
   uniqueViewers: [],
 };

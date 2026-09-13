@@ -1,26 +1,78 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   Heart, ArrowLeft, Copy, Check, Eye, Users, TrendingUp,
   Calendar, MapPin, Edit3, Trash2, ExternalLink, QrCode, Clock, Share2
 } from 'lucide-react';
-import { useAppContext } from '@/lib/context/app-context';
+import { ProtectedRoute } from '@/components/protected-route';
+import { useAppContext, Event } from '@/lib/context/app-context';
 import { getOptimizedImageUrl } from '@/lib/utils';
 import QRCode from 'react-qr-code';
 
 export default function EventDetailsPage() {
   const params = useParams();
   const router = useRouter();
-  const { getEvent, deleteEvent, isEventAuthorized, loginWithEventPasscode } = useAppContext();
+  const { getEvent, deleteEvent, isEventAuthorized, loginWithEventPasscode, isLoading } = useAppContext();
   const id = params.id as string;
-  const event = getEvent(id);
+  const eventFromContext = getEvent(id);
+
+  const [fetchedEvent, setFetchedEvent] = useState<Event | null>(null);
+  const [fetching, setFetching] = useState(false);
   const [copied, setCopied] = useState(false);
   const [inputPasscode, setInputPasscode] = useState('');
   const [passError, setPassError] = useState('');
+
+  useEffect(() => {
+    if (!eventFromContext && id) {
+      setFetching(true);
+      fetch(`/api/events/${id}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.event) {
+            const mapped: Event = {
+              ...data.event,
+              id: data.event._id ?? data.event.id,
+              dateTime: new Date(data.event.dateTime),
+              createdAt: new Date(data.event.createdAt),
+              passcode: data.event.passcode ?? '',
+              guests: (data.event.guests ?? []).map((g: any) => ({
+                ...g,
+                eventId: data.event._id ?? data.event.id,
+                timestamp: new Date(g.timestamp),
+              })),
+              views: data.event.views ?? 0,
+              uniqueViewers: data.event.uniqueViewers ?? [],
+              musicTrack: data.event.musicTrack ?? 'arabic-vibes',
+              customMusicUrl: data.event.customMusicUrl ?? '',
+              googleMapsUrl: data.event.googleMapsUrl ?? data.event.locationUrl ?? '',
+              theme: data.event.theme ?? { primary: '#e8627a', secondary: '#7c3aed' },
+            };
+            setFetchedEvent(mapped);
+          }
+        })
+        .catch(console.error)
+        .finally(() => setFetching(false));
+    }
+  }, [id, eventFromContext]);
+
+  const event = eventFromContext || fetchedEvent;
+
+  if (isLoading || (fetching && !event)) {
+    return (
+      <ProtectedRoute>
+        <main className="luxury-bg min-h-screen flex flex-col items-center justify-center gap-6">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-xl shadow-rose-500/25 animate-bounce">
+            <Heart className="w-7 h-7 text-white fill-white" />
+          </div>
+          <p className="text-white/40 text-sm tracking-wide font-semibold">جاري تحميل بيانات الحدث...</p>
+        </main>
+      </ProtectedRoute>
+    );
+  }
 
   if (!event) {
     return (
@@ -49,6 +101,8 @@ export default function EventDetailsPage() {
       const res = loginWithEventPasscode(inputPasscode);
       if (!res.success) {
         setPassError(res.error || 'رمز غير صحيح');
+      } else if (res.eventId && String(res.eventId) !== String(event.id) && !res.isGlobalAdmin) {
+        setPassError('كلمة السر هذه خاصة بدعوة أخرى وليست لهذه الدعوة.');
       }
     };
 
