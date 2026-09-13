@@ -16,6 +16,7 @@ export interface IEvent extends Document {
   message: string;
   coverImage: string;      // Cloudinary URL
   slug: string;
+  passcode: string;        // Dedicated password for event access
   guests: IGuest[];
   createdAt: Date;
   views: number;
@@ -47,6 +48,7 @@ const EventSchema = new Schema<IEvent>(
     message:       { type: String, default: '' },
     coverImage:    { type: String, default: '' },
     slug:          { type: String, required: true, unique: true },
+    passcode:      { type: String, default: '' },
     guests:        { type: [GuestSchema], default: [] },
     views:         { type: Number, default: 0 },
     uniqueViewers: { type: [String], default: [] },

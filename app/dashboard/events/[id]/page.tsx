@@ -15,10 +15,12 @@ import QRCode from 'react-qr-code';
 export default function EventDetailsPage() {
   const params = useParams();
   const router = useRouter();
-  const { getEvent, deleteEvent } = useAppContext();
+  const { getEvent, deleteEvent, isEventAuthorized, loginWithEventPasscode } = useAppContext();
   const id = params.id as string;
   const event = getEvent(id);
   const [copied, setCopied] = useState(false);
+  const [inputPasscode, setInputPasscode] = useState('');
+  const [passError, setPassError] = useState('');
 
   if (!event) {
     return (
@@ -32,6 +34,55 @@ export default function EventDetailsPage() {
               <button className="luxury-btn-primary">
                 العودة للوحة التحكم
               </button>
+            </Link>
+          </div>
+        </main>
+      </ProtectedRoute>
+    );
+  }
+
+  // Check authorization for this specific event
+  if (!isEventAuthorized(event.id)) {
+    const handlePasscodeSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      setPassError('');
+      const res = loginWithEventPasscode(inputPasscode);
+      if (!res.success) {
+        setPassError(res.error || 'رمز غير صحيح');
+      }
+    };
+
+    return (
+      <ProtectedRoute>
+        <main className="luxury-bg min-h-screen flex items-center justify-center p-6">
+          <div className="luxury-card p-8 text-center max-w-md w-full space-y-6">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-amber-500 to-rose-500 flex items-center justify-center shadow-xl">
+              <span className="text-2xl">🔐</span>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-white">دخول إدارة الدعوة</h2>
+              <p className="text-white/40 text-xs mt-1">
+                من فضلك أدخل كلمة سر الدعوة (🔑) للدخول لمتابعة الضيوف وإدارتها
+              </p>
+            </div>
+
+            <form onSubmit={handlePasscodeSubmit} className="space-y-4">
+              <input
+                type="password"
+                value={inputPasscode}
+                onChange={(e) => setInputPasscode(e.target.value)}
+                placeholder="أدخل كلمة سر الدعوة (مثال: 1234)"
+                className="luxury-input w-full px-4 py-3 text-center text-sm font-mono"
+                autoFocus
+              />
+              {passError && <p className="text-red-400 text-xs font-bold">{passError}</p>}
+              <button type="submit" className="luxury-btn-primary w-full py-3">
+                فتح الدعوة ✨
+              </button>
+            </form>
+
+            <Link href="/dashboard" className="inline-block text-white/30 text-xs hover:text-white/60">
+              ← العودة للوحة التحكم
             </Link>
           </div>
         </main>
@@ -113,10 +164,15 @@ export default function EventDetailsPage() {
           >
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
               <div className="lg:col-span-2 space-y-4">
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   <span className="px-3 py-1 rounded-full text-xs font-bold bg-rose-500/15 text-rose-400 border border-rose-500/20">
                     {event.type === 'Wedding' ? '💍 زفاف' : event.type === 'Engagement' ? '💜 خطوبة' : '📜 كتب كتاب'}
                   </span>
+                  {event.passcode && (
+                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/25 flex items-center gap-1 font-mono">
+                      🔑 رمز الدخول: {event.passcode}
+                    </span>
+                  )}
                   <span className="text-xs text-white/40 flex items-center gap-1">
                     <Clock className="w-3.5 h-3.5" />
                     تاريخ الحدث

@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     const {
       title, type, hostName, dateTime, location, message,
-      coverImage, musicTrack, customMusicUrl, googleMapsUrl, theme,
+      coverImage, musicTrack, customMusicUrl, googleMapsUrl, theme, passcode
     } = body;
 
     if (!title || !type || !hostName || !dateTime || !location) {
@@ -49,6 +49,7 @@ export async function POST(req: NextRequest) {
     }
 
     const slug = await generateUniqueSlug(title);
+    const finalPasscode = (passcode && passcode.trim()) ? passcode.trim() : String(Math.floor(1000 + Math.random() * 9000));
 
     const event = await EventModel.create({
       title,
@@ -59,6 +60,7 @@ export async function POST(req: NextRequest) {
       message:        message        ?? '',
       coverImage:     coverImage     ?? '',
       slug,
+      passcode:       finalPasscode,
       guests:         [],
       views:          0,
       uniqueViewers:  [],

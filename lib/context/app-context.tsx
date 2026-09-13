@@ -27,6 +27,7 @@ export interface Event {
   message: string;
   coverImage: string;       // Cloudinary URL
   slug: string;
+  passcode: string;         // Event passcode / login password
   guests: Guest[];
   createdAt: Date;
   views: number;
@@ -40,6 +41,8 @@ export interface Event {
 interface AppContextType {
   events: Event[];
   currentUser: { isAuthenticated: boolean };
+  authorizedEventIds: string[];
+  isGlobalAdmin: boolean;
   isLoading: boolean;
   createEvent: (event: Omit<Event, 'id' | '_id' | 'slug' | 'guests' | 'createdAt'>) => Promise<Event>;
   updateEvent: (id: string, event: Partial<Event>) => Promise<void>;
@@ -52,6 +55,8 @@ interface AppContextType {
   uploadFile: (file: File, type: 'image' | 'audio') => Promise<string>;
   refreshEvents: () => Promise<void>;
   login: () => void;
+  loginWithEventPasscode: (passcode: string) => { success: boolean; eventId?: string; isGlobalAdmin?: boolean; error?: string };
+  isEventAuthorized: (eventId: string) => boolean;
   logout: () => void;
 }
 
@@ -64,6 +69,7 @@ function mapEvent(raw: any): Event {
     id:        raw._id ?? raw.id,
     dateTime:  new Date(raw.dateTime),
     createdAt: new Date(raw.createdAt),
+    passcode:  raw.passcode ?? '',
     guests: (raw.guests ?? []).map((g: any) => ({
       ...g,
       eventId:   raw._id ?? raw.id,
@@ -79,16 +85,27 @@ function mapEvent(raw: any): Event {
 }
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [events, setEvents]           = useState<Event[]>([]);
-  const [currentUser, setCurrentUser] = useState<{ isAuthenticated: boolean }>({ isAuthenticated: false });
-  const [isLoading, setIsLoading]     = useState(true);
+  const [events, setEvents]                   = useState<Event[]>([]);
+  const [currentUser, setCurrentUser]         = useState<{ isAuthenticated: boolean }>({ isAuthenticated: false });
+  const [authorizedEventIds, setAuthorizedEventIds] = useState<string[]>([]);
+  const [isGlobalAdmin, setIsGlobalAdmin]     = useState(false);
+  const [isLoading, setIsLoading]             = useState(true);
 
   // ─── Load auth state from localStorage (lightweight) ───
   useEffect(() => {
     const auth = localStorage.getItem('weddingly_auth');
-    if (auth === 'true') {
+    const globalAdmin = localStorage.getItem('weddingly_global_admin') === 'true';
+    const savedEventAuths = localStorage.getItem('weddingly_event_auths');
+    
+    let parsedEventAuths: string[] = [];
+    if (savedEventAuths) {
+      try { parsedEventAuths = JSON.parse(savedEventAuths); } catch (e) {}
+    }
+
+    if (auth === 'true' || globalAdmin || parsedEventAuths.length > 0) {
       setCurrentUser({ isAuthenticated: true });
-      // Restore cookie in case it expired (middleware needs it)
+      setIsGlobalAdmin(globalAdmin);
+      setAuthorizedEventIds(parsedEventAuths);
       document.cookie = 'weddingly_auth=true; path=/; max-age=86400; SameSite=Lax';
     }
   }, []);
@@ -195,24 +212,60 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // ─── Auth ───
   const login = () => {
     setCurrentUser({ isAuthenticated: true });
+    setIsGlobalAdmin(true);
     localStorage.setItem('weddingly_auth', 'true');
-    // Set cookie for server-side middleware (1 day expiry)
+    localStorage.setItem('weddingly_global_admin', 'true');
     document.cookie = 'weddingly_auth=true; path=/; max-age=86400; SameSite=Lax';
+  };
+
+  const loginWithEventPasscode = (code: string) => {
+    const trimmed = code.trim();
+    if (!trimmed) return { success: false, error: 'من فضلك أدخل رمز أو كلمة سر الدعوة' };
+
+    // Check if global admin password
+    const adminPass = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
+    if (trimmed === adminPass) {
+      login();
+      return { success: true, isGlobalAdmin: true };
+    }
+
+    // Match against event passcodes
+    const matched = events.find((e) => e.passcode && e.passcode.trim() === trimmed);
+    if (matched) {
+      const updatedAuths = Array.from(new Set([...authorizedEventIds, matched.id]));
+      setAuthorizedEventIds(updatedAuths);
+      setCurrentUser({ isAuthenticated: true });
+      localStorage.setItem('weddingly_auth', 'true');
+      localStorage.setItem('weddingly_event_auths', JSON.stringify(updatedAuths));
+      document.cookie = 'weddingly_auth=true; path=/; max-age=86400; SameSite=Lax';
+      return { success: true, eventId: matched.id };
+    }
+
+    return { success: false, error: 'رمز الدخول غير صحيح. تحقق من كلمة السر وحاول مجدداً.' };
+  };
+
+  const isEventAuthorized = (eventId: string): boolean => {
+    if (isGlobalAdmin) return true;
+    return authorizedEventIds.includes(eventId) || authorizedEventIds.includes(String(eventId));
   };
 
   const logout = () => {
     setCurrentUser({ isAuthenticated: false });
+    setIsGlobalAdmin(false);
+    setAuthorizedEventIds([]);
     localStorage.removeItem('weddingly_auth');
-    // Clear the auth cookie
+    localStorage.removeItem('weddingly_global_admin');
+    localStorage.removeItem('weddingly_event_auths');
     document.cookie = 'weddingly_auth=; path=/; max-age=0; SameSite=Lax';
   };
-
 
   return (
     <AppContext.Provider
       value={{
         events,
         currentUser,
+        authorizedEventIds,
+        isGlobalAdmin,
         isLoading,
         createEvent,
         updateEvent,
@@ -225,6 +278,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         uploadFile,
         refreshEvents,
         login,
+        loginWithEventPasscode,
+        isEventAuthorized,
         logout,
       }}
     >

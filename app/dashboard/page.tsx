@@ -28,7 +28,7 @@ const eventTypeConfig: Record<string, { label: string; gradient: string; badgeBg
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { events, deleteEvent, logout } = useAppContext();
+  const { events, deleteEvent, logout, isEventAuthorized, isGlobalAdmin } = useAppContext();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleLogout = () => { logout(); router.push('/'); };
@@ -40,11 +40,13 @@ export default function DashboardPage() {
     }
   };
 
-  const totalRSVPs  = events.reduce((s, e) => s + e.guests.length, 0);
-  const totalViews  = events.reduce((s, e) => s + e.views, 0);
+  const visibleEvents = events.filter((e) => isEventAuthorized(e.id));
+
+  const totalRSVPs  = visibleEvents.reduce((s, e) => s + e.guests.length, 0);
+  const totalViews  = visibleEvents.reduce((s, e) => s + e.views, 0);
 
   const stats = [
-    { label: 'إجمالي الأحداث',   value: events.length, icon: Calendar,    gradient: 'from-rose-400 to-pink-600',    bg: 'bg-rose-500/10',   glow: 'shadow-rose-500/20' },
+    { label: 'إجمالي الأحداث',   value: visibleEvents.length, icon: Calendar,    gradient: 'from-rose-400 to-pink-600',    bg: 'bg-rose-500/10',   glow: 'shadow-rose-500/20' },
     { label: 'الحضور المؤكد',     value: totalRSVPs,    icon: Users,       gradient: 'from-violet-400 to-purple-600', bg: 'bg-violet-500/10', glow: 'shadow-violet-500/20' },
     { label: 'إجمالي المشاهدات', value: totalViews,    icon: TrendingUp,  gradient: 'from-amber-400 to-orange-500',  bg: 'bg-amber-500/10',  glow: 'shadow-amber-500/20' },
   ];
@@ -123,19 +125,19 @@ export default function DashboardPage() {
           {/* Section title */}
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-white/80">قائمة الأحداث</h3>
-            <span className="text-xs text-white/30 bg-white/5 border border-white/8 rounded-full px-3 py-1">{events.length} حدث</span>
+            <span className="text-xs text-white/30 bg-white/5 border border-white/8 rounded-full px-3 py-1">{visibleEvents.length} حدث</span>
           </div>
 
           {/* Events Grid */}
-          {events.length === 0 ? (
+          {visibleEvents.length === 0 ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.97 }}
               animate={{ opacity: 1, scale: 1 }}
               className="luxury-card p-16 text-center"
             >
               <div className="text-6xl mb-4 animate-bounce-sm">💌</div>
-              <h3 className="text-xl font-bold text-white mb-2">لا يوجد أحداث بعد</h3>
-              <p className="text-white/40 text-sm mb-8">أنشئ أول حدث لك وابدأ في إرسال الدعوات الجميلة</p>
+              <h3 className="text-xl font-bold text-white mb-2">لا يوجد أحداث متاحة</h3>
+              <p className="text-white/40 text-sm mb-8">أنشئ حدثك الأول أو أدخل بكلمة سر دعوتك لمتابعتها</p>
               <Link href="/dashboard/create">
                 <button className="luxury-btn-primary inline-flex items-center gap-2">
                   <Plus className="w-4 h-4" />
@@ -146,7 +148,7 @@ export default function DashboardPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               <AnimatePresence>
-                {events.map((event, idx) => {
+                {visibleEvents.map((event, idx) => {
                   const typeConf = eventTypeConfig[event.type] ?? eventTypeConfig['Wedding'];
                   const track    = getTrackById(event.musicTrack);
                   const isDeleting = deletingId === event.id;

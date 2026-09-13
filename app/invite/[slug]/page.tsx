@@ -732,7 +732,11 @@ export default function InvitationPage() {
           <RingsMark className="w-9 h-5" />
         </div>
         <p className="text-amber-900 text-sm font-ruqah-bold font-bold">صُمّمت بكل حب وأناقة بواسطة Weddingly</p>
-        <p className="text-slate-500 text-xs">جميع الحقوق محفوظة © {new Date().getFullYear()}</p>
+        <Link href={`/login?from=/dashboard/events/${event.id}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-900/5 hover:bg-amber-900/10 text-amber-900/70 hover:text-amber-900 text-xs font-semibold transition-colors">
+          <Lock className="w-3.5 h-3.5" />
+          <span>لوحة إدارة ومتابعة هذه الدعوة 🔑</span>
+        </Link>
+        <p className="text-slate-500 text-xs pt-1">جميع الحقوق محفوظة © {new Date().getFullYear()}</p>
       </footer>
     </main>
   );

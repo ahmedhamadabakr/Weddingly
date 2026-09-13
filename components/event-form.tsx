@@ -33,6 +33,7 @@ export function EventForm({ initialEvent, onSubmit, defaultValues }: EventFormPr
     message:        initialEvent?.message        || '',
     coverImage:     initialEvent?.coverImage     || '',
     customMusicUrl: initialEvent?.customMusicUrl || '',
+    passcode:       initialEvent?.passcode       || String(Math.floor(1000 + Math.random() * 9000)),
   });
 
   const [imagePreview,     setImagePreview]     = useState<string>(initialEvent?.coverImage || '');
@@ -54,6 +55,7 @@ export function EventForm({ initialEvent, onSubmit, defaultValues }: EventFormPr
         message:        initialEvent.message        || '',
         coverImage:     initialEvent.coverImage     || '',
         customMusicUrl: initialEvent.customMusicUrl || '',
+        passcode:       initialEvent.passcode       || String(Math.floor(1000 + Math.random() * 9000)),
       });
       setImagePreview(initialEvent.coverImage || '');
     }
@@ -131,6 +133,7 @@ export function EventForm({ initialEvent, onSubmit, defaultValues }: EventFormPr
       message:        formData.message,
       coverImage:     formData.coverImage,
       customMusicUrl: formData.customMusicUrl,
+      passcode:       formData.passcode || String(Math.floor(1000 + Math.random() * 9000)),
       views:          initialEvent?.views        ?? 0,
       uniqueViewers:  initialEvent?.uniqueViewers ?? [],
       musicTrack,
@@ -167,15 +170,27 @@ export function EventForm({ initialEvent, onSubmit, defaultValues }: EventFormPr
 
       <form onSubmit={handleSubmit} className="space-y-5">
 
-        {/* Title */}
-        <div>
-          <label className={fieldLabel}>عنوان الحدث *</label>
-          <input
-            value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            placeholder="مثال: زفاف سارة وأحمد"
-            className={inputClass}
-          />
+        {/* Title & Passcode */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="md:col-span-2">
+            <label className={fieldLabel}>عنوان الحدث *</label>
+            <input
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              placeholder="مثال: زفاف سارة وأحمد"
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label className={fieldLabel}>رمز الدخول الخاص بالدعوة (كلمة السر) 🔑</label>
+            <input
+              type="text"
+              value={formData.passcode}
+              onChange={(e) => setFormData({ ...formData, passcode: e.target.value })}
+              placeholder="مثال: 1234"
+              className={`${inputClass} font-mono text-amber-300 font-bold border-amber-500/30 focus:border-amber-400`}
+            />
+          </div>
         </div>
 
         {/* Type + Host */}
