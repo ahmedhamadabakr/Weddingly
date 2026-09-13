@@ -86,7 +86,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="ar" dir="rtl" className={`${arefRuqaa.variable} ${cairo.variable} ${amiri.variable} ${reemKufi.variable}`}>
+    <html lang="ar" dir="rtl" className={`dark ${arefRuqaa.variable} ${cairo.variable} ${amiri.variable} ${reemKufi.variable}`}>
       <body className="font-normal-text font-sans antialiased bg-[#060a14] text-white">
         <AppProvider>
           {children}
