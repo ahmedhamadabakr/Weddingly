@@ -87,6 +87,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl" className={`dark ${arefRuqaa.variable} ${cairo.variable} ${amiri.variable} ${reemKufi.variable}`}>
+      <head>
+        <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+      </head>
       <body className="font-normal-text font-sans antialiased bg-[#060a14] text-white">
         <AppProvider>
           {children}

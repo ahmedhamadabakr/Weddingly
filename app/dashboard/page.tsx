@@ -12,6 +12,7 @@ import {
 import { useAppContext } from '@/lib/context/app-context';
 import { ProtectedRoute } from '@/components/protected-route';
 import { getTrackById } from '@/lib/music-tracks';
+import { getOptimizedImageUrl } from '@/lib/utils';
 
 const formatDate = (date: Date) =>
   new Date(date).toLocaleDateString('ar-EG', {
@@ -166,8 +167,10 @@ export default function DashboardPage() {
                       <div className="relative h-44 overflow-hidden flex-shrink-0">
                         {event.coverImage ? (
                           <img
-                            src={event.coverImage}
+                            src={getOptimizedImageUrl(event.coverImage, 450)}
                             alt={event.title}
+                            loading="lazy"
+                            decoding="async"
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                           />
                         ) : (

@@ -9,7 +9,7 @@ import {
   Calendar, MapPin, Edit3, Trash2, ExternalLink, QrCode, Clock, Share2
 } from 'lucide-react';
 import { useAppContext } from '@/lib/context/app-context';
-import { ProtectedRoute } from '@/components/protected-route';
+import { getOptimizedImageUrl } from '@/lib/utils';
 import QRCode from 'react-qr-code';
 
 export default function EventDetailsPage() {
@@ -207,7 +207,13 @@ export default function EventDetailsPage() {
               <div className="space-y-4">
                 {event.coverImage ? (
                   <div className="rounded-xl overflow-hidden border border-white/10 h-48 relative">
-                    <img src={event.coverImage} alt={event.title} className="w-full h-full object-cover" />
+                    <img
+                      src={getOptimizedImageUrl(event.coverImage, 600)}
+                      alt={event.title}
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 ) : (
                   <div className="rounded-xl border border-white/10 h-48 bg-gradient-to-br from-rose-500/20 to-violet-600/20 flex items-center justify-center">
