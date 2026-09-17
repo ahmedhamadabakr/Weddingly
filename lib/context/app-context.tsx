@@ -7,6 +7,7 @@ export interface Guest {
   eventId: string;
   name: string;
   numAttendees: number;
+  note?: string;
   timestamp: Date;
 }
 
@@ -73,6 +74,7 @@ function mapEvent(raw: any): Event {
     guests: (raw.guests ?? []).map((g: any) => ({
       ...g,
       eventId:   raw._id ?? raw.id,
+      note:      g.note ?? '',
       timestamp: new Date(g.timestamp),
     })),
     views:          raw.views          ?? 0,

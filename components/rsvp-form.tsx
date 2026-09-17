@@ -30,7 +30,7 @@ export function RSVPForm({ eventId, theme, onSubmit }: RSVPFormProps) {
     if (!name.trim()) { setError('من فضلك أدخل اسمك الكريم'); return; }
     setSubmitting(true);
     try {
-      await addGuest(eventId, { name: name.trim(), numAttendees });
+      await addGuest(eventId, { name: name.trim(), numAttendees, note: note.trim() });
       setSubmitted(true);
       onSubmit?.();
     } catch (err: any) {

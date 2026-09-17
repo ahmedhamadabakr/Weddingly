@@ -6,7 +6,7 @@ import EventModel from '@/lib/db/models/Event';
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
-    const { eventId, name, numAttendees } = await req.json();
+    const { eventId, name, numAttendees, note } = await req.json();
 
     if (!eventId || !name || !numAttendees) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -16,6 +16,7 @@ export async function POST(req: NextRequest) {
       id:           Math.random().toString(36).substring(2, 9),
       name,
       numAttendees: Number(numAttendees),
+      note:         note ? String(note).trim() : '',
       timestamp:    new Date(),
     };
 

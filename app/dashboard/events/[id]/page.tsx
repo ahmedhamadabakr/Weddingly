@@ -42,6 +42,7 @@ export default function EventDetailsPage() {
               guests: (data.event.guests ?? []).map((g: any) => ({
                 ...g,
                 eventId: data.event._id ?? data.event.id,
+                note: g.note ?? '',
                 timestamp: new Date(g.timestamp),
               })),
               views: data.event.views ?? 0,
@@ -463,6 +464,7 @@ export default function EventDetailsPage() {
                     <tr className="border-b border-white/10 text-white/40 text-xs">
                       <th className="py-3 px-4">اسم الضيف</th>
                       <th className="py-3 px-4">عدد الأفراد</th>
+                      <th className="py-3 px-4">كلمة التبريك / التهنئة</th>
                       <th className="py-3 px-4">تاريخ التأكيد</th>
                     </tr>
                   </thead>
@@ -474,6 +476,15 @@ export default function EventDetailsPage() {
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs bg-violet-500/15 text-violet-300 border border-violet-500/20">
                             {guest.numAttendees} {guest.numAttendees === 1 ? 'فرد' : 'أفراد'}
                           </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-xs">
+                          {guest.note ? (
+                            <span className="text-amber-200/90 italic bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg inline-block max-w-xs truncate" title={guest.note}>
+                              💬 &ldquo;{guest.note}&rdquo;
+                            </span>
+                          ) : (
+                            <span className="text-white/20">-</span>
+                          )}
                         </td>
                         <td className="py-3.5 px-4 text-white/40 text-xs">
                           {new Date(guest.timestamp).toLocaleDateString('ar-EG', {

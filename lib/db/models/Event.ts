@@ -4,6 +4,7 @@ export interface IGuest {
   id: string;
   name: string;
   numAttendees: number;
+  note?: string;
   timestamp: Date;
 }
 
@@ -35,6 +36,7 @@ const GuestSchema = new Schema<IGuest>({
   id:           { type: String, required: true },
   name:         { type: String, required: true },
   numAttendees: { type: Number, required: true, min: 1 },
+  note:         { type: String, default: '' },
   timestamp:    { type: Date, default: Date.now },
 });
 
